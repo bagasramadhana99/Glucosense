@@ -1,20 +1,17 @@
 import mysql.connector
 from functools import wraps
 from flask import jsonify
+import os
+from dotenv import load_dotenv
 
-# 1. Impor disederhanakan, kita hanya butuh 'Error' dari mysql.connector
 from mysql.connector import Error
 
-# Kredensial database server Anda
-DB_HOST = '103.59.160.21'
-DB_USER = 'glucosen_user'
-DB_PASSWORD = 'FSj397hEUFJTaFG'
-DB_NAME = 'glucosen_data'
+load_dotenv()
 
-#DB_HOST = '145.79.15.182'
-#DB_USER = 'glucosense'
-#DB_PASSWORD = 'pendeteksiglukosa100mmhg'
-#DB_NAME = 'glucosense'
+DB_HOST = os.getenv('DB_HOST')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_NAME = os.getenv('DB_NAME')
 
 def get_connection():
     """Fungsi dasar untuk membuat koneksi ke database."""
@@ -45,15 +42,13 @@ def db_connection(f):
             result = f(cursor, *args, **kwargs)
             conn.commit()
             return result
-        # 2. Blok 'except' diubah dari MySQLError menjadi Error
         except Error as e:
             conn.rollback()
             print(f"Database error: {e}")
-            # Logika untuk memeriksa e.errno tetap berfungsi dengan kelas Error
             if hasattr(e, 'errno'):
-                if e.errno == 1062: # Duplikat entri
+                if e.errno == 1062:
                     return jsonify({"message": "Data dengan nilai unik yang sama sudah ada.", "error": str(e)}), 409
-                if e.errno == 1451: # Foreign key constraint
+                if e.errno == 1451:
                     return jsonify({"message": "Tidak bisa menghapus/memperbarui data karena masih digunakan.", "error": str(e)}), 409
             return jsonify({"message": "Terjadi kesalahan pada database.", "error": str(e)}), 500
         except Exception as e:
