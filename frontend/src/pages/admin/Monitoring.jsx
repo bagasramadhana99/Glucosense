@@ -50,7 +50,7 @@ const CircularGauge = ({ value, maxValue, label, unit }) => {
   const getColor = (val) => {
     if (label === "Glukosa") {
       if (val < 70) return "text-errorRed stroke-errorRed";
-      if (val > 140) return "text-warningAmber stroke-warningAmber";
+      if (val > 200) return "text-warningAmber stroke-warningAmber";
       return "text-successGreen stroke-successGreen";
     } else {
       if (val < 60 || val > 100) return "text-warningAmber stroke-warningAmber";
@@ -106,14 +106,14 @@ const CircularGauge = ({ value, maxValue, label, unit }) => {
             className={`text-xs mt-1 font-medium ${
               animatedValue < 70
                 ? "text-errorRed"
-                : animatedValue > 140
+                : animatedValue > 200
                 ? "text-warningAmber"
                 : "text-successGreen"
             }`}
           >
             {animatedValue < 70
               ? "Rendah"
-              : animatedValue > 140
+              : animatedValue > 200
               ? "Tinggi"
               : "Normal"}
           </p>
@@ -160,7 +160,7 @@ const Monitoring = () => {
       }
     };
     fetchData();
-    const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
   }, []);
 

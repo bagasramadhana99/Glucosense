@@ -41,6 +41,10 @@ const LatestCheckup = ({ checkup }) => {
     minute: '2-digit',
   });
 
+  const handleViewAll = () => {
+    navigate('/pasien/riwayat');
+  };
+
   return (
     <div className="bg-cardWhite p-6 rounded-2xl shadow-md border border-lineGray transition hover:shadow-lg">
       <div className="flex justify-between items-center mb-4">
@@ -49,7 +53,7 @@ const LatestCheckup = ({ checkup }) => {
           Pemeriksaan Terakhir
         </h2>
         <button
-          onClick={() => navigate('/pasien/riwayat')}
+          onClick={handleViewAll}
           className="text-sm font-medium text-softBlue hover:underline transition"
         >
           Lihat Semua
@@ -84,71 +88,82 @@ const LatestCheckup = ({ checkup }) => {
 // =========================
 // Fun Fact Accordion
 // =========================
-const FunFactItem = ({ fact, isOpen, onClick }) => (
-  <div className="bg-cardWhite rounded-xl shadow-md border border-lineGray overflow-hidden mb-3 transition-all duration-300 hover:shadow-lg">
-    <button
-      onClick={onClick}
-      className="w-full flex justify-between items-center text-left p-5 focus:outline-none hover:bg-neutralBg/20 transition"
-      aria-expanded={isOpen}
-    >
-      <div className="flex items-center flex-1">
-        <FaLightbulb className="text-yellow-500 text-xl mr-3 flex-shrink-0" />
-        <h3 className="font-semibold text-textPrimary pr-4">{fact.judul}</h3>
-      </div>
-      <FaChevronDown
-        className={`text-softBlue transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-      />
-    </button>
+const FunFactItem = ({ fact, isOpen, onClick }) => {
+  const handleClick = () => {
+    onClick();
+  };
 
-    <div
-      className={`overflow-hidden transition-all duration-500 ease-in-out ${
-        isOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
-      }`}
-    >
-      <div className="px-5 pb-5 pt-1">
-        <p className="text-textSecondary leading-relaxed">{fact.deskripsi}</p>
+  return (
+    <div className="bg-cardWhite rounded-xl shadow-md border border-lineGray overflow-hidden mb-3 transition-all duration-300 hover:shadow-lg">
+      <button
+        onClick={handleClick}
+        className="w-full flex justify-between items-center text-left p-5 focus:outline-none hover:bg-neutralBg/20 transition"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center flex-1">
+          <FaLightbulb className="text-yellow-500 text-xl mr-3 flex-shrink-0" />
+          <h3 className="font-semibold text-textPrimary pr-4">{fact.judul}</h3>
+        </div>
+        <FaChevronDown
+          className={`text-softBlue transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      <div
+        className={`overflow-hidden transition-all duration-500 ease-in-out ${
+          isOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="px-5 pb-5 pt-1">
+          <p className="text-textSecondary leading-relaxed">{fact.deskripsi}</p>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // =========================
 // News Item
 // =========================
-const NewsItem = ({ article }) => (
-  <div className="bg-cardWhite rounded-xl shadow-md border border-lineGray p-4 hover:shadow-lg transition-all duration-300">
-    <div className="flex gap-3">
-      {article.urlToImage ? (
-        <img
-          src={article.urlToImage}
-          alt={article.title}
-          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-          loading="lazy"
-        />
-      ) : (
-        <div className="w-20 h-20 bg-neutralBg/50 rounded-lg flex items-center justify-center flex-shrink-0">
-          <FaNewspaper className="text-2xl text-textSecondary/30" />
+const NewsItem = ({ article }) => {
+  const handleReadMore = (e) => {
+    e.preventDefault();
+    window.open(article.url, '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <div className="bg-cardWhite rounded-xl shadow-md border border-lineGray p-4 hover:shadow-lg transition-all duration-300">
+      <div className="flex gap-3">
+        {article.urlToImage ? (
+          <img
+            src={article.urlToImage}
+            alt={article.title}
+            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-20 h-20 bg-neutralBg/50 rounded-lg flex items-center justify-center flex-shrink-0">
+            <FaNewspaper className="text-2xl text-textSecondary/30" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-textPrimary line-clamp-2">
+            {article.title}
+          </h3>
+          <p className="text-textSecondary text-xs mt-1 line-clamp-2">
+            {article.description || 'Tidak ada deskripsi.'}
+          </p>
+          <button
+            onClick={handleReadMore}
+            className="text-softBlue text-xs font-medium mt-2 inline-block hover:underline"
+          >
+            Baca →
+          </button>
         </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-textPrimary line-clamp-2">
-          {article.title}
-        </h3>
-        <p className="text-textSecondary text-xs mt-1 line-clamp-2">
-          {article.description || 'Tidak ada deskripsi.'}
-        </p>
-        <a
-          href={article.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-softBlue text-xs font-medium mt-2 inline-block hover:underline"
-        >
-          Baca →
-        </a>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // =========================
 // Main Component
@@ -217,6 +232,10 @@ export default function PasienHome() {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  const handleStartCheckup = () => {
+    navigate('/pasien/pemeriksaan');
+  };
+
   return (
     <div className="bg-neutralBg min-h-screen">
       <Header />
@@ -250,7 +269,7 @@ export default function PasienHome() {
                 <div className="bg-cardWhite p-8 rounded-2xl shadow-md border border-lineGray text-center">
                   <p className="text-textSecondary">Belum ada riwayat pemeriksaan.</p>
                   <button
-                    onClick={() => navigate('/pasien/pemeriksaan')}
+                    onClick={handleStartCheckup}
                     className="mt-3 text-softBlue font-medium hover:underline"
                   >
                     Mulai Pemeriksaan

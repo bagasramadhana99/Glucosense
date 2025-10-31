@@ -10,14 +10,16 @@ const BottomNavItem = ({ to, icon, label }) => (
       ${isActive ? "text-primaryBlue font-semibold" : "text-textSecondary"} hover:text-primaryBlue relative`
     }
   >
-    {icon}
-    <span className="mt-1">{label}</span>
-    {/* Indicator */}
-    {({ isActive }) =>
-      isActive && (
-        <span className="absolute -top-1 h-1 w-full rounded-full bg-primaryBlue" />
-      )
-    }
+    {({ isActive }) => (
+      <>
+        {icon}
+        <span className="mt-1">{label}</span>
+        {/* Indicator */}
+        {isActive && (
+          <span className="absolute -top-1 h-1 w-full rounded-full bg-primaryBlue" />
+        )}
+      </>
+    )}
   </NavLink>
 );
 

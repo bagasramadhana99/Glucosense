@@ -1,83 +1,212 @@
-import React from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import BottomNav from '../../components/BottomNav';
-import { FaArrowRight } from 'react-icons/fa';
+import { FaArrowRight, FaChartLine, FaHeartbeat, FaInfoCircle } from 'react-icons/fa';
 
-// --- KOMPONEN UNTUK VISUALISASI ---
+// Konstanta untuk deskripsi
+const PREDICTION_DESCRIPTIONS = {
+  risk: 'Ketahui estimasi risiko Anda terhadap diabetes untuk deteksi dini.',
+  trend: 'Lihat proyeksi kadar gula darah Anda untuk 5 hari ke depan.'
+};
 
-const MiniTrendChart = () => (
-    <svg className="w-full h-full" viewBox="0 0 100 50" preserveAspectRatio="xMidYMid meet">
-        <path d="M 0 40 Q 15 10, 30 30 T 60 20 T 90 35 L 100 30" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-    </svg>
-);
+// Komponen Visualisasi Sederhana
+const SimpleChart = () => {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  return (
+    <div className="flex items-end justify-between h-12 w-full px-1">
+      <div className={`w-2 bg-primaryBlue/30 rounded-t transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{height: '40%'}}></div>
+      <div className={`w-2 bg-primaryBlue/40 rounded-t transition-opacity duration-700 delay-100 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{height: '60%'}}></div>
+      <div className={`w-2 bg-primaryBlue/50 rounded-t transition-opacity duration-700 delay-200 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{height: '45%'}}></div>
+      <div className={`w-2 bg-primaryBlue/60 rounded-t transition-opacity duration-700 delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{height: '70%'}}></div>
+      <div className={`w-2 bg-primaryBlue/70 rounded-t transition-opacity duration-700 delay-400 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{height: '55%'}}></div>
+      <div className={`w-2 bg-primaryBlue/80 rounded-t transition-opacity duration-700 delay-500 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{height: '65%'}}></div>
+      <div className={`w-2 bg-primaryBlue rounded-t transition-opacity duration-700 delay-600 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{height: '80%'}}></div>
+    </div>
+  );
+};
 
-const MiniRiskCircle = () => (
-    <svg className="w-full h-full" viewBox="0 0 36 36">
-        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3.5" />
-        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3.5" strokeDasharray="75, 100" strokeLinecap="round" transform="rotate(-90 18 18)" />
-        <text x="18" y="22" textAnchor="middle" fontSize="9px" fill="currentColor" fontWeight="bold">75%</text>
-    </svg>
-);
+const RiskMeter = () => {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  return (
+    <div className="relative h-12 w-12">
+      <svg className="transform -rotate-90 w-12 h-12">
+        <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className="text-lineGray"></circle>
+        <circle 
+          cx="24" 
+          cy="24" 
+          r="20" 
+          stroke="currentColor" 
+          strokeWidth="4" 
+          fill="none" 
+          strokeDasharray="125.6" 
+          strokeDashoffset={mounted ? "31.4" : "125.6"} 
+          className="text-primaryRed transition-all duration-1000 ease-out"
+        ></circle>
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-xs font-bold text-primaryRed">75%</span>
+      </div>
+    </div>
+  );
+};
 
-// --- Komponen Card ---
-const PredictionOptionCard = ({ title, description, visual, onClick, gradient }) => (
-    <button
-        onClick={onClick}
-        className={`relative p-6 rounded-2xl shadow-lg w-full text-left hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden text-white ${gradient}`}
+// Komponen Card Prediksi
+const PredictionCard = ({ 
+  title, 
+  description, 
+  icon, 
+  onClick, 
+  isPrimary = false,
+  visual 
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <div 
+      className="bg-cardWhite p-6 rounded-2xl shadow-sm border border-lineGray transition-all duration-300 hover:shadow-md"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-        <div className="flex justify-between items-center">
-            {/* Bagian Kiri: Konten Teks */}
-            <div className="flex-1 pr-4 z-10">
-                <h3 className="text-2xl font-bold tracking-tight">{title}</h3>
-                <p className="mt-2 text-sm opacity-90 max-w-xs">{description}</p>
-                <div className="mt-6 font-semibold flex items-center group text-sm">
-                    Mulai
-                    <FaArrowRight className="ml-2 transform group-hover:translate-x-1 transition-transform" />
-                </div>
-            </div>
-
-            {/* Bagian Kanan: Visualisasi */}
-            <div className="absolute -right-4 -bottom-4 w-32 h-32 text-white opacity-20">
-                {visual}
-            </div>
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center">
+          <div className={`p-3 rounded-xl mr-4 transition-transform duration-300 ${
+            isPrimary 
+              ? "bg-red-100 text-primaryRed" 
+              : "bg-blue-100 text-primaryBlue"
+          } ${isHovered ? 'scale-105' : ''}`}>
+            {icon}
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-textPrimary">{title}</h3>
+            <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full mt-1 ${
+              isPrimary 
+                ? "bg-red-100 text-primaryRed" 
+                : "bg-blue-100 text-primaryBlue"
+            }`}>
+              {isPrimary ? "Populer" : "Baru"}
+            </span>
+          </div>
         </div>
-    </button>
+        <div className="opacity-20">
+          {visual}
+        </div>
+      </div>
+      
+      <p className="text-textSecondary mb-6">{description}</p>
+      
+      <button
+        onClick={onClick}
+        className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center transition-all ${
+          isPrimary 
+            ? "bg-primaryRed hover:bg-red-600 text-white" 
+            : "bg-primaryBlue hover:bg-blue-600 text-white"
+        }`}
+      >
+        Mulai Prediksi
+        <FaArrowRight className={`ml-2 transition-transform duration-300 ${isHovered ? 'translate-x-1' : ''}`} />
+      </button>
+    </div>
+  );
+};
+
+// Komponen Info Ringan
+const InfoTip = ({ title, description }) => (
+  <div className="bg-cardWhite p-4 rounded-xl border border-lineGray">
+    <div className="flex items-start">
+      <div className="p-2 rounded-lg bg-softBlue/10 text-primaryBlue mr-3 flex-shrink-0">
+        <FaInfoCircle size={16} />
+      </div>
+      <div>
+        <h4 className="font-semibold text-textPrimary text-sm">{title}</h4>
+        <p className="text-xs text-textSecondary mt-1">{description}</p>
+      </div>
+    </div>
+  </div>
 );
 
 export default function ChoosePredictionPage() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    return (
-        <div className="bg-gray-100 min-h-screen">
-            <Header />
-            <main className="p-4 pb-28">
-                <h1 className="text-3xl font-bold mb-2 text-gray-800 tracking-tighter">Lakukan Prediksi</h1>
-                <p className="text-gray-600 mb-8">Pilih jenis analisis kesehatan yang ingin Anda lakukan.</p>
-                
-                <div className="space-y-6">
-                    {/* Card untuk Prediksi Risiko */}
-                    <PredictionOptionCard 
-                        title="Prediksi Risiko"
-                        description="Ketahui estimasi risiko Anda terhadap diabetes untuk deteksi dini."
-                        visual={<MiniRiskCircle />}
-                        onClick={() => navigate('/pasien/prediksi-risiko')}
-                        // --- WARNA DIUBAH MENJADI LEBIH TERANG (-400) ---
-                        gradient="bg-gradient-to-br from-red-400 to-orange-400"
-                    />
+  // Event handlers dengan useCallback
+  const handleRiskPrediction = useCallback(() => {
+    navigate('/pasien/prediksi-risiko');
+  }, [navigate]);
 
-                    {/* Card untuk Prediksi Tren */}
-                    <PredictionOptionCard 
-                        title="Prediksi Tren"
-                        description="Lihat proyeksi kadar gula darah Anda untuk 5 hari ke depan."
-                        visual={<MiniTrendChart />}
-                        onClick={() => navigate('/pasien/prediksi-tren')}
-                        // --- WARNA DIUBAH MENJADI LEBIH TERANG (-400) ---
-                        gradient="bg-gradient-to-br from-indigo-400 to-purple-400"
-                    />
-                </div>
-            </main>
-            <BottomNav />
+  const handleTrendPrediction = useCallback(() => {
+    navigate('/pasien/prediksi-tren');
+  }, [navigate]);
+
+  return (
+    <div className="bg-neutralBg min-h-screen">
+      <Header />
+      <main className="pt-6 pb-32 px-4 md:px-8 max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-textPrimary">Lakukan Prediksi</h1>
+          <p className="text-textSecondary mt-2 text-sm md:text-base">
+            Pilih jenis analisis kesehatan yang ingin Anda lakukan berdasarkan data pemeriksaan Anda.
+          </p>
         </div>
-    );
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Card untuk Prediksi Risiko */}
+          <PredictionCard 
+            title="Prediksi Risiko"
+            description={PREDICTION_DESCRIPTIONS.risk}
+            icon={<FaHeartbeat size={24} />}
+            onClick={handleRiskPrediction}
+            isPrimary={true}
+            visual={<RiskMeter />}
+          />
+
+          {/* Card untuk Prediksi Tren */}
+          <PredictionCard 
+            title="Prediksi Tren"
+            description={PREDICTION_DESCRIPTIONS.trend}
+            icon={<FaChartLine size={24} />}
+            onClick={handleTrendPrediction}
+            isPrimary={false}
+            visual={<SimpleChart />}
+          />
+        </div>
+
+        {/* Info Tips Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InfoTip 
+            title="Prediksi Risiko"
+            description="Menggunakan data pemeriksaan Anda untuk mengidentifikasi potensi risiko diabetes."
+          />
+          <InfoTip 
+            title="Prediksi Tren"
+            description="Menganalisis pola data historis untuk memproyeksikan kadar gula darah masa depan."
+          />
+        </div>
+
+        {/* Catatan Penting */}
+        <div className="mt-8 p-4 bg-softBlue/5 rounded-xl border border-softBlue/20">
+          <div className="flex items-start">
+            <FaInfoCircle className="text-primaryBlue mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <h4 className="font-semibold text-textPrimary text-sm mb-1">Catatan Penting</h4>
+              <p className="text-xs text-textSecondary">
+                Hasil prediksi ini bersifat informasional dan bukan pengganti diagnosis medis profesional. 
+                Selalu konsultasikan dengan dokter Anda untuk keputusan kesehatan.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+      <BottomNav />
+    </div>
+  );
 }
