@@ -1,2 +1,4 @@
-# Abaikan model machine learning
 *.pkl
+*/.env
+*/__pycache__/*
+*.env

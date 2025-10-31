@@ -31,7 +31,6 @@ except FileNotFoundError:
 
 @ml_bp.route("/predict", methods=["POST"])
 def predict():
-    # ... sisa kode Anda tidak perlu diubah ...
     if model is None or scaler is None:
         return jsonify({"error": "Model prediksi tidak tersedia di server"}), 503
 
@@ -48,27 +47,53 @@ def predict():
         hba1c = float(data_json["hba1c_level"])
         glucose = float(data_json["blood_glucose"])
 
-        # Kalkulasi BMI
         tinggi_m = tinggi / 100
-        bmi = berat / (tinggi_m ** 2)
+        bmi = round(berat / (tinggi_m ** 2), 2)
 
-        # Buat data untuk prediksi
         data_to_predict = np.array([[gender, age, hypertension, heart_disease, smoking_history, bmi, hba1c, glucose]])
-
-        # Normalisasi data
         scaled_data = scaler.transform(data_to_predict)
-
-        # Prediksi menggunakan model
         prediction = model.predict(scaled_data)[0]
-        
+
+        risk_factors = []
+        if hba1c >= 6.5:
+            risk_factors.append({"feature": "HbA1c", "value": f"{hba1c}%", "status": "Tinggi"})
+        elif hba1c < 4.0:
+            risk_factors.append({"feature": "HbA1c", "value": f"{hba1c}%", "status": "Rendah"})
+
+        if glucose >= 140:
+            risk_factors.append({"feature": "Glukosa", "value": f"{glucose} mg/dL", "status": "Tinggi"})
+        elif glucose < 70:
+            risk_factors.append({"feature": "Glukosa", "value": f"{glucose} mg/dL", "status": "Rendah"})
+
+        if bmi >= 25:
+            risk_factors.append({"feature": "BMI", "value": f"{bmi}", "status": "Overweight"})
+        elif bmi < 18.5:
+            risk_factors.append({"feature": "BMI", "value": f"{bmi}", "status": "Kurus"})
+
+        if age >= 45:
+            risk_factors.append({"feature": "Usia", "value": f"{age} tahun", "status": "Risiko usia"})
+
+        if hypertension == 1:
+            risk_factors.append({"feature": "Hipertensi", "value": "Ya", "status": "Berisiko"})
+        if heart_disease == 1:
+            risk_factors.append({"feature": "Penyakit Jantung", "value": "Ya", "status": "Berisiko"})
+
+        if smoking_history == 1:
+            risk_factors.append({"feature": "Riwayat Merokok", "value": "Ya", "status": "Risiko tambahan"})
+
         hasil_prediksi = {
             "prediction_code": int(prediction),
             "result": "Risiko Tinggi" if prediction == 1 else "Risiko Rendah",
-            "message": "Prediksi berhasil dihitung."
+            "message": "Prediksi berhasil dihitung.",
+            "risk_factors": risk_factors,
+            "probability": 100 if prediction == 1 else 0
         }
 
         return jsonify(hasil_prediksi), 200
 
+    except Exception as e:
+        print(f"Terjadi kesalahan saat prediksi: {str(e)}")
+        return jsonify({"error": f"Kesalahan internal server: {str(e)}"}), 500
     except KeyError as e:
         return jsonify({"error": f"Data input tidak lengkap, field '{str(e)}' tidak ditemukan."}), 400
     except (ValueError, TypeError) as e:

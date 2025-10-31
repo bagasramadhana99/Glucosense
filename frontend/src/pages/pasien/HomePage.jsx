@@ -1,256 +1,344 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Ditambahkan untuk navigasi
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/axiosConfig';
-import { FaChevronDown, FaLightbulb, FaNewspaper, FaHeartbeat } from 'react-icons/fa'; // Ditambahkan ikon
+import {
+  FaChevronDown,
+  FaLightbulb,
+  FaNewspaper,
+  FaHeartbeat,
+  FaCalendarAlt,
+} from 'react-icons/fa';
 import Header from '../../components/Header';
 import BottomNav from '../../components/BottomNav';
 
 // =========================
-// KOMPONEN BARU: Riwayat Pemeriksaan Terakhir
+// Skeleton Loader
+// =========================
+const ImageSkeleton = () => (
+  <div className="bg-gray-200 border rounded-xl w-full h-32 animate-pulse" />
+);
+
+const TextSkeleton = () => (
+  <div className="space-y-2">
+    <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+    <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+  </div>
+);
+
+// =========================
+// Latest Checkup
 // =========================
 const LatestCheckup = ({ checkup }) => {
-    // Format tanggal agar mudah dibaca dan menampilkan waktu UTC
-    const formattedDate = new Date(checkup.timestamp).toLocaleDateString('id-ID', {
-        timeZone: 'UTC',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const date = new Date(checkup.timestamp);
+  const formattedDateTime = date.toLocaleDateString('id-ID', {
+    timeZone: 'UTC',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
-    return (
-        <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 mb-8">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                    <FaHeartbeat className="text-red-500 mr-2" />
-                    Pemeriksaan Terakhir
-                </h2>
-                <button
-                    onClick={() => navigate('/pasien/riwayat')}
-                    className="text-sm text-indigo-600 hover:underline font-semibold"
-                >
-                    Lihat Semua
-                </button>
-            </div>
-            <p className="text-sm text-gray-500 mb-3">{formattedDate} (UTC)</p>
-            <div className="flex justify-between items-center text-gray-700">
-                <div>
-                    <span className="text-sm">Glukosa:</span>
-                    <p className="font-bold text-xl">{checkup.glucose_level} <span className="text-sm font-normal">mg/dL</span></p>
-                </div>
-                <div className="text-right">
-                    <span className="text-sm">Detak Jantung:</span>
-                    <p className="font-bold text-xl">{checkup.heart_rate} <span className="text-sm font-normal">bpm</span></p>
-                </div>
-            </div>
+  return (
+    <div className="bg-cardWhite p-6 rounded-2xl shadow-md border border-lineGray transition hover:shadow-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-textPrimary flex items-center">
+          <FaHeartbeat className="text-primaryRed mr-2.5" />
+          Pemeriksaan Terakhir
+        </h2>
+        <button
+          onClick={() => navigate('/pasien/riwayat')}
+          className="text-sm font-medium text-softBlue hover:underline transition"
+        >
+          Lihat Semua
+        </button>
+      </div>
+
+      <div className="flex items-center text-textSecondary text-sm mb-5">
+        <FaCalendarAlt className="mr-1.5 text-xs" />
+        <span>{formattedDateTime} WIB</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6 text-center">
+        <div>
+          <p className="text-textSecondary text-sm">Glukosa Darah</p>
+          <p className="text-2xl font-bold text-textPrimary mt-1">
+            {checkup.glucose_level}{' '}
+            <span className="text-sm font-normal text-textSecondary">mg/dL</span>
+          </p>
         </div>
-    );
+        <div>
+          <p className="text-textSecondary text-sm">Detak Jantung</p>
+          <p className="text-2xl font-bold text-textPrimary mt-1">
+            {checkup.heart_rate}{' '}
+            <span className="text-sm font-normal text-textSecondary">bpm</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-
-// Komponen Accordion untuk FAQ (FunFactItem) - tidak diubah
+// =========================
+// Fun Fact Accordion
+// =========================
 const FunFactItem = ({ fact, isOpen, onClick }) => (
-    <div className="bg-white rounded-lg shadow-md mb-4 overflow-hidden">
-        <button
-            onClick={onClick}
-            className="w-full flex justify-between items-center text-left p-4 focus:outline-none hover:bg-gray-50"
-        >
-            <div className="flex items-center">
-                <FaLightbulb className="text-yellow-400 text-xl mr-3 flex-shrink-0" />
-                <h3 className="text-base font-semibold text-gray-800">{fact.judul}</h3>
-            </div>
-            <span className="text-indigo-500 ml-2">
-                <FaChevronDown
-                    className={`transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-180' : 'rotate-0'}`}
-                />
-            </span>
-        </button>
-        <div
-            className={`overflow-hidden transition-max-height duration-500 ease-in-out ${isOpen ? 'max-h-96' : 'max-h-0'
-                }`}
-        >
-            <div className="px-4 pb-4 pt-0 text-gray-600">
-                <p>{fact.deskripsi}</p>
-            </div>
-        </div>
+  <div className="bg-cardWhite rounded-xl shadow-md border border-lineGray overflow-hidden mb-3 transition-all duration-300 hover:shadow-lg">
+    <button
+      onClick={onClick}
+      className="w-full flex justify-between items-center text-left p-5 focus:outline-none hover:bg-neutralBg/20 transition"
+      aria-expanded={isOpen}
+    >
+      <div className="flex items-center flex-1">
+        <FaLightbulb className="text-yellow-500 text-xl mr-3 flex-shrink-0" />
+        <h3 className="font-semibold text-textPrimary pr-4">{fact.judul}</h3>
+      </div>
+      <FaChevronDown
+        className={`text-softBlue transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+      />
+    </button>
+
+    <div
+      className={`overflow-hidden transition-all duration-500 ease-in-out ${
+        isOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+      }`}
+    >
+      <div className="px-5 pb-5 pt-1">
+        <p className="text-textSecondary leading-relaxed">{fact.deskripsi}</p>
+      </div>
     </div>
+  </div>
 );
 
-// Komponen untuk Berita (NewsItem) - tidak diubah
+// =========================
+// News Item
+// =========================
 const NewsItem = ({ article }) => (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-4 hover:shadow-lg transition">
-        <div className="flex flex-col md:flex-row">
-            {article.urlToImage && (
-                <img
-                    src={article.urlToImage}
-                    alt={article.title}
-                    className="w-full md:w-48 h-32 object-cover rounded-lg mb-4 md:mb-0 md:mr-4"
-                />
-            )}
-            <div>
-                <h3 className="text-lg font-semibold text-gray-800">{article.title}</h3>
-                <p className="text-gray-600 text-sm mt-2">
-                    {article.description || 'Tidak ada deskripsi yang tersedia.'}
-                </p>
-                <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 text-sm mt-2 inline-block hover:underline"
-                >
-                    Baca selengkapnya
-                </a>
-            </div>
+  <div className="bg-cardWhite rounded-xl shadow-md border border-lineGray p-4 hover:shadow-lg transition-all duration-300">
+    <div className="flex gap-3">
+      {article.urlToImage ? (
+        <img
+          src={article.urlToImage}
+          alt={article.title}
+          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+          loading="lazy"
+        />
+      ) : (
+        <div className="w-20 h-20 bg-neutralBg/50 rounded-lg flex items-center justify-center flex-shrink-0">
+          <FaNewspaper className="text-2xl text-textSecondary/30" />
         </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-semibold text-textPrimary line-clamp-2">
+          {article.title}
+        </h3>
+        <p className="text-textSecondary text-xs mt-1 line-clamp-2">
+          {article.description || 'Tidak ada deskripsi.'}
+        </p>
+        <a
+          href={article.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-softBlue text-xs font-medium mt-2 inline-block hover:underline"
+        >
+          Baca →
+        </a>
+      </div>
     </div>
+  </div>
 );
 
-// Komponen Halaman Utama (PasienHome) - DIMODIFIKASI
+// =========================
+// Main Component
+// =========================
 export default function PasienHome() {
-    // State yang sudah ada
-    const [facts, setFacts] = useState([]);
-    const [loadingFacts, setLoadingFacts] = useState(true);
-    const [openIndex, setOpenIndex] = useState(null);
-    const [news, setNews] = useState([]);
-    const [loadingNews, setLoadingNews] = useState(true);
-    const user = JSON.parse(localStorage.getItem('user'));
+  const [facts, setFacts] = useState([]);
+  const [loadingFacts, setLoadingFacts] = useState(true);
+  const [openIndex, setOpenIndex] = useState(null);
+  const [news, setNews] = useState([]);
+  const [loadingNews, setLoadingNews] = useState(true);
+  const [latestCheckup, setLatestCheckup] = useState(null);
+  const [loadingCheckup, setLoadingCheckup] = useState(true);
 
-    // STATE BARU untuk riwayat terakhir
-    const [latestCheckup, setLatestCheckup] = useState(null);
-    const [loadingCheckup, setLoadingCheckup] = useState(true);
+  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  const navigate = useNavigate();
 
-    // useEffect BARU untuk mengambil riwayat terakhir
-    useEffect(() => {
-        const fetchLatestCheckup = async () => {
-            try {
-                const response = await apiClient.get('/monitoring/me');
-                if (response.data && response.data.length > 0) {
-                    // API mengembalikan data dari terbaru, jadi ambil yang pertama (indeks 0)
-                    setLatestCheckup(response.data[0]);
-                }
-            } catch (error) {
-                console.error('Gagal memuat riwayat terakhir:', error);
-            } finally {
-                setLoadingCheckup(false);
-            }
-        };
-
-        fetchLatestCheckup();
-    }, []);
-
-
-    // useEffect yang sudah ada (tidak diubah)
-    useEffect(() => {
-        const fetchFunFacts = async () => {
-            try {
-                const response = await apiClient.get('/faq');
-                setFacts(response.data);
-            } catch (error) {
-                console.error('Gagal memuat Fun Facts:', error);
-            } finally {
-                setLoadingFacts(false);
-            }
-        };
-        fetchFunFacts();
-    }, []);
-
-    useEffect(() => {
-        const fetchNews = async () => {
-            try {
-                const response = await fetch(
-                    `https://newsapi.org/v2/everything?q=diabetes&language=id&sortBy=publishedAt&apiKey=9f918ad6d2fb4d409ea49c2595261d92`
-                );
-                const data = await response.json();
-                console.log("NewsAPI response:", data); // Debug di console
-                if (data.articles) {
-                    setNews(data.articles.slice(0, 5));
-                }
-            } catch (error) {
-                console.error('Gagal memuat berita:', error);
-            } finally {
-                setLoadingNews(false);
-            }
-        };
-        fetchNews();
-    }, []);
-
-
-    const handleToggle = (index) => {
-        setOpenIndex(openIndex === index ? null : index);
+  // Ambil data pemeriksaan terakhir
+  useEffect(() => {
+    const fetchLatestCheckup = async () => {
+      try {
+        const { data } = await apiClient.get('/monitoring/me');
+        setLatestCheckup(data?.[0] || null);
+      } catch (err) {
+        console.error('Gagal memuat pemeriksaan:', err);
+      } finally {
+        setLoadingCheckup(false);
+      }
     };
+    fetchLatestCheckup();
+  }, []);
 
-    return (
-        <div className="bg-gray-50 min-h-screen">
-            <Header />
-            <main className="p-4 pb-28">
-                <h1 className="text-2xl font-bold mb-1 text-gray-800">Beranda</h1>
-                <p className="text-gray-600 mb-8">Selamat datang, {user?.name || 'Pasien'}!</p>
+  // Ambil data fun facts
+  useEffect(() => {
+    const fetchFunFacts = async () => {
+      try {
+        const { data } = await apiClient.get('/faq');
+        setFacts(data);
+      } catch (err) {
+        console.error('Gagal memuat Fun Facts:', err);
+      } finally {
+        setLoadingFacts(false);
+      }
+    };
+    fetchFunFacts();
+  }, []);
 
-                {/* ========================================================== */}
-                {/* BAGIAN BARU: Menampilkan Riwayat Pemeriksaan Terakhir */}
-                {/* ========================================================== */}
-                {loadingCheckup ? (
-                    <p className="text-center text-gray-500 mb-8">Memuat pemeriksaan terakhir...</p>
-                ) : latestCheckup ? (
-                    <LatestCheckup checkup={latestCheckup} />
-                ) : (
-                    <p className="text-center text-gray-500 bg-white p-4 rounded-lg shadow-sm mb-8">
-                        Belum ada riwayat pemeriksaan.
-                    </p>
-                )}
+  // Ambil berita terbaru dari API
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const res = await fetch(
+          `https://newsapi.org/v2/everything?q=diabetes&language=id&sortBy=publishedAt&apiKey=9f918ad6d2fb4d409ea49c2595261d92`
+        );
+        const { articles } = await res.json();
+        setNews(articles?.slice(0, 6) || []);
+      } catch (err) {
+        console.error('Gagal memuat berita:', err);
+      } finally {
+        setLoadingNews(false);
+      }
+    };
+    fetchNews();
+  }, []);
 
+  const toggleAccordion = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
 
-                {/* Section Fun Facts */}
-                <div>
-                    <h2 className="text-xl font-bold text-gray-800 mb-4">Fun Facts Seputar Diabetes</h2>
-                    {loadingFacts ? (
-                        <p className="text-center text-gray-500">Memuat fakta menarik...</p>
-                    ) : (
-                        <div>
-                            {facts.length > 0 ? (
-                                facts.map((fact, index) => (
-                                    <FunFactItem
-                                        key={fact.id}
-                                        fact={fact}
-                                        isOpen={openIndex === index}
-                                        onClick={() => handleToggle(index)}
-                                    />
-                                ))
-                            ) : (
-                                <p className="p-4 text-center text-gray-500">
-                                    Tidak ada data Fun Facts untuk ditampilkan.
-                                </p>
-                            )}
-                        </div>
-                    )}
-                </div>
+  return (
+    <div className="bg-neutralBg min-h-screen">
+      <Header />
 
-                {/* Section Berita */}
-                <div className="mt-12">
-                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <FaNewspaper className="text-indigo-500 mr-2" /> Berita Terkini Tentang Diabetes
-                    </h2>
-                    {loadingNews ? (
-                        <p className="text-center text-gray-500">Memuat berita terkini...</p>
-                    ) : (
-                        <div>
-                            {news.length > 0 ? (
-                                news.map((article, index) => (
-                                    <NewsItem key={index} article={article} />
-                                ))
-                            ) : (
-                                <p className="p-4 text-center text-gray-500">
-                                    Tidak ada berita yang tersedia saat ini.
-                                </p>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </main>
-            <BottomNav />
+      <main className="pt-6 pb-32 px-4 md:px-8">
+        {/* Greeting */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-textPrimary">Beranda</h1>
+          <p className="text-textSecondary mt-1 text-sm md:text-base">
+            Selamat datang,{' '}
+            <span className="font-semibold text-primaryBlue">
+              {user?.name || 'Pasien'}
+            </span>
+            !
+          </p>
         </div>
-    );
+
+        {/* Layout */}
+        <div className="block md:grid md:grid-cols-3 gap-6">
+          {/* Left Column */}
+          <div className="md:col-span-2 space-y-8">
+            {/* Latest Checkup */}
+            <section aria-labelledby="latest-checkup">
+              {loadingCheckup ? (
+                <div className="bg-cardWhite p-6 rounded-2xl shadow-md border border-lineGray">
+                  <TextSkeleton />
+                </div>
+              ) : latestCheckup ? (
+                <LatestCheckup checkup={latestCheckup} />
+              ) : (
+                <div className="bg-cardWhite p-8 rounded-2xl shadow-md border border-lineGray text-center">
+                  <p className="text-textSecondary">Belum ada riwayat pemeriksaan.</p>
+                  <button
+                    onClick={() => navigate('/pasien/pemeriksaan')}
+                    className="mt-3 text-softBlue font-medium hover:underline"
+                  >
+                    Mulai Pemeriksaan
+                  </button>
+                </div>
+              )}
+            </section>
+
+            {/* Fun Facts */}
+            <section aria-labelledby="fun-facts">
+              <h2
+                id="fun-facts"
+                className="text-xl font-bold text-textPrimary mb-4 flex items-center"
+              >
+                <FaLightbulb className="text-yellow-500 mr-2.5" />
+                Fun Facts Seputar Diabetes
+              </h2>
+
+              {loadingFacts ? (
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-cardWhite p-5 rounded-xl shadow-md border border-lineGray"
+                    >
+                      <TextSkeleton />
+                    </div>
+                  ))}
+                </div>
+              ) : facts.length > 0 ? (
+                <div className="space-y-3">
+                  {facts.map((fact, idx) => (
+                    <FunFactItem
+                      key={fact.id}
+                      fact={fact}
+                      isOpen={openIndex === idx}
+                      onClick={() => toggleAccordion(idx)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-textSecondary py-4">
+                  Tidak ada Fun Facts tersedia.
+                </p>
+              )}
+            </section>
+          </div>
+
+          {/* Right Column */}
+          <div className="md:col-span-1">
+            <section aria-labelledby="latest-news">
+              <h2
+                id="latest-news"
+                className="text-xl font-bold text-textPrimary mb-4 flex items-center"
+              >
+                <FaNewspaper className="text-primaryBlue mr-2.5" />
+                Berita Terkini
+              </h2>
+
+              <div className="space-y-3 pr-2 max-h-[500px] md:max-h-[600px] overflow-y-auto">
+                {loadingNews ? (
+                  [...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-cardWhite p-4 rounded-xl shadow-md border border-lineGray flex gap-3"
+                    >
+                      <div className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse" />
+                      <div className="flex-1">
+                        <TextSkeleton />
+                      </div>
+                    </div>
+                  ))
+                ) : news.length > 0 ? (
+                  news.map((article, idx) => (
+                    <NewsItem key={`${article.url}-${idx}`} article={article} />
+                  ))
+                ) : (
+                  <p className="text-center text-textSecondary py-4 text-sm">
+                    Tidak ada berita saat ini.
+                  </p>
+                )}
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <BottomNav />
+    </div>
+  );
 }
