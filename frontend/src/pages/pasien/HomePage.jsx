@@ -1,339 +1,330 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/axiosConfig';
 import {
   FaChevronDown,
   FaLightbulb,
-  FaNewspaper,
   FaHeartbeat,
   FaCalendarAlt,
+  FaChartLine,
+  FaStethoscope,
 } from 'react-icons/fa';
 import Header from '../../components/Header';
 import BottomNav from '../../components/BottomNav';
 
 // =========================
-// Skeleton Loader
+// Skeleton
 // =========================
-const ImageSkeleton = () => (
-  <div className="bg-gray-200 border rounded-xl w-full h-32 animate-pulse" />
-);
-
-const TextSkeleton = () => (
-  <div className="space-y-2">
-    <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
-    <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+const SkeletonCard = () => (
+  <div className="bg-cardWhite p-6 rounded-2xl border border-lineGray animate-pulse">
+    <div className="h-5 bg-gray-200 rounded w-36 mb-4"></div>
+    <div className="space-y-2">
+      <div className="h-4 bg-gray-200 rounded w-full"></div>
+      <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+    </div>
   </div>
 );
 
 // =========================
 // Latest Checkup
 // =========================
-const LatestCheckup = ({ checkup }) => {
-  const navigate = useNavigate();
-
+const LatestCheckup = memo(({ checkup, onViewHistory }) => {
   const date = new Date(checkup.timestamp);
-  const formattedDateTime = date.toLocaleDateString('id-ID', {
-    timeZone: 'UTC',
+  const formatted = date.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   });
+  const time = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="bg-cardWhite p-6 rounded-2xl shadow-md border border-lineGray transition hover:shadow-lg">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-textPrimary flex items-center">
-          <FaHeartbeat className="text-primaryRed mr-2.5" />
+    <div className="bg-cardWhite p-6 rounded-2xl border border-lineGray">
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-lg font-semibold text-textPrimary flex items-center">
+          <FaHeartbeat className="text-primaryRed mr-2" />
           Pemeriksaan Terakhir
-        </h2>
+        </h3>
         <button
-          onClick={() => navigate('/pasien/riwayat')}
-          className="text-sm font-medium text-softBlue hover:underline transition"
+          onClick={onViewHistory}
+          className="text-sm text-softBlue hover:underline font-medium"
         >
           Lihat Semua
         </button>
       </div>
-
-      <div className="flex items-center text-textSecondary text-sm mb-5">
+      <p className="text-sm text-textSecondary flex items-center mb-4">
         <FaCalendarAlt className="mr-1.5 text-xs" />
-        <span>{formattedDateTime} WIB</span>
-      </div>
-
+        {formatted} • {time} WIB
+      </p>
       <div className="grid grid-cols-2 gap-6 text-center">
         <div>
-          <p className="text-textSecondary text-sm">Glukosa Darah</p>
-          <p className="text-2xl font-bold text-textPrimary mt-1">
-            {checkup.glucose_level}{' '}
-            <span className="text-sm font-normal text-textSecondary">mg/dL</span>
+          <p className="text-xs text-textSecondary mb-1">Glukosa</p>
+          <p className="text-2xl font-bold text-textPrimary">
+            {checkup.glucose_level}
+            <span className="text-sm font-normal text-textSecondary ml-1">mg/dL</span>
           </p>
         </div>
         <div>
-          <p className="text-textSecondary text-sm">Detak Jantung</p>
-          <p className="text-2xl font-bold text-textPrimary mt-1">
-            {checkup.heart_rate}{' '}
-            <span className="text-sm font-normal text-textSecondary">bpm</span>
+          <p className="text-xs text-textSecondary mb-1">Detak Jantung</p>
+          <p className="text-2xl font-bold text-textPrimary">
+            {checkup.heart_rate}
+            <span className="text-sm font-normal text-textSecondary ml-1">bpm</span>
           </p>
         </div>
       </div>
     </div>
   );
-};
+});
 
 // =========================
-// Fun Fact Accordion
+// Health Stats
 // =========================
-const FunFactItem = ({ fact, isOpen, onClick }) => (
-  <div className="bg-cardWhite rounded-xl shadow-md border border-lineGray overflow-hidden mb-3 transition-all duration-300 hover:shadow-lg">
+const HealthStats = memo(({ riwayat }) => {
+  const stats = useMemo(() => {
+    if (!riwayat.length) return null;
+    const g = riwayat.map(r => r.glucose_level);
+    return {
+      total: riwayat.length,
+      avg: Math.round(g.reduce((a, b) => a + b, 0) / g.length),
+      min: Math.min(...g),
+      max: Math.max(...g),
+    };
+  }, [riwayat]);
+
+  if (!stats) return null;
+
+  return (
+    <div className="bg-cardWhite p-5 rounded-2xl border border-lineGray">
+      <h3 className="text-base font-semibold text-textPrimary mb-3 flex items-center">
+        <FaChartLine className="text-primaryBlue mr-2 text-sm" />
+        Ringkasan
+      </h3>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-textSecondary">Total</span>
+          <span className="font-medium">{stats.total} kali</span>
+        </div>
+        <div className="pt-2 border-t border-lineGray text-xs">
+          <div className="grid grid-cols-3 gap-3 text-center mt-2">
+            <div>
+              <p className="text-textSecondary">Rata²</p>
+              <p className="font-semibold">{stats.avg}</p>
+            </div>
+            <div>
+              <p className="text-successGreen">Min</p>
+              <p className="font-semibold text-successGreen">{stats.min}</p>
+            </div>
+            <div>
+              <p className="text-errorRed">Max</p>
+              <p className="font-semibold text-errorRed">{stats.max}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// =========================
+// Mini Trend Chart
+// =========================
+const MiniTrendChart = memo(({ riwayat }) => {
+  const last7Days = useMemo(() => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    return riwayat
+      .filter(r => new Date(r.timestamp) >= sevenDaysAgo)
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+      .slice(-7);
+  }, [riwayat]);
+
+  if (last7Days.length < 2) return null;
+
+  const values = last7Days.map(r => r.glucose_level);
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+
+  return (
+    <div className="bg-cardWhite p-5 rounded-2xl border border-lineGray">
+      <h3 className="text-base font-semibold text-textPrimary mb-3 flex items-center">
+        <FaChartLine className="text-primaryBlue mr-2 text-sm" />
+        Tren 7 Hari
+      </h3>
+      <div className="h-20">
+        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <polyline
+            fill="none"
+            stroke="#3b82f6"
+            strokeWidth="2"
+            strokeLinecap="round"
+            points={last7Days
+              .map((r, i) => {
+                const x = (i / (last7Days.length - 1)) * 100;
+                const y = 80 - ((r.glucose_level - min) / range) * 60;
+                return `${x},${y}`;
+              })
+              .join(' ')}
+          />
+          {last7Days.map((r, i) => {
+            const x = (i / (last7Days.length - 1)) * 100;
+            const y = 80 - ((r.glucose_level - min) / range) * 60;
+            return <circle key={i} cx={x} cy={y} r="3" fill="#3b82f6" />;
+          })}
+        </svg>
+      </div>
+      <div className="flex justify-between text-xs text-textSecondary mt-1">
+        <span>{values[0]}</span>
+        <span>{values[values.length - 1]}</span>
+      </div>
+    </div>
+  );
+});
+
+// =========================
+// Fun Fact Item
+// =========================
+const FunFactItem = memo(({ fact, isOpen, onToggle }) => (
+  <div className="bg-cardWhite rounded-2xl border border-lineGray overflow-hidden">
     <button
-      onClick={onClick}
-      className="w-full flex justify-between items-center text-left p-5 focus:outline-none hover:bg-neutralBg/20 transition"
-      aria-expanded={isOpen}
+      onClick={onToggle}
+      className="w-full flex justify-between items-center p-4 text-left focus:outline-none focus:bg-neutralBg/30 transition-colors"
     >
       <div className="flex items-center flex-1">
-        <FaLightbulb className="text-yellow-500 text-xl mr-3 flex-shrink-0" />
-        <h3 className="font-semibold text-textPrimary pr-4">{fact.judul}</h3>
+        <FaLightbulb className="text-yellow-500 mr-2 text-sm" />
+        <h4 className="text-sm font-medium text-textPrimary">{fact.judul}</h4>
       </div>
-      <FaChevronDown
-        className={`text-softBlue transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-      />
+      <FaChevronDown className={`text-softBlue text-sm transition-transform ${isOpen ? 'rotate-180' : ''}`} />
     </button>
+    <div className={`overflow-hidden transition-all ${isOpen ? 'max-h-40' : 'max-h-0'}`}>
+      <p className="px-4 pb-4 pt-1 text-xs text-textSecondary leading-relaxed">{fact.deskripsi}</p>
+    </div>
+  </div>
+));
 
-    <div
-      className={`overflow-hidden transition-all duration-500 ease-in-out ${
-        isOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
-      }`}
+// =========================
+// Empty State
+// =========================
+const EmptyCheckup = memo(({ onStartCheckup }) => (
+  <div className="bg-cardWhite p-8 rounded-2xl border border-lineGray text-center">
+    <div className="w-16 h-16 mx-auto bg-primaryBlue/10 rounded-full flex items-center justify-center mb-4">
+      <FaStethoscope className="text-primaryBlue text-2xl" />
+    </div>
+    <h3 className="text-lg font-semibold text-textPrimary mb-1">Belum Ada Data</h3>
+    <p className="text-sm text-textSecondary mb-4">Mulai pemeriksaan untuk melihat hasil glukosa Anda.</p>
+    <button
+      onClick={onStartCheckup}
+      className="text-sm font-medium text-primaryBlue hover:text-softBlue transition"
     >
-      <div className="px-5 pb-5 pt-1">
-        <p className="text-textSecondary leading-relaxed">{fact.deskripsi}</p>
-      </div>
-    </div>
+      Mulai Pemeriksaan
+    </button>
   </div>
-);
-
-// =========================
-// News Item
-// =========================
-const NewsItem = ({ article }) => (
-  <div className="bg-cardWhite rounded-xl shadow-md border border-lineGray p-4 hover:shadow-lg transition-all duration-300">
-    <div className="flex gap-3">
-      {article.urlToImage ? (
-        <img
-          src={article.urlToImage}
-          alt={article.title}
-          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-          loading="lazy"
-        />
-      ) : (
-        <div className="w-20 h-20 bg-neutralBg/50 rounded-lg flex items-center justify-center flex-shrink-0">
-          <FaNewspaper className="text-2xl text-textSecondary/30" />
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-textPrimary line-clamp-2">
-          {article.title}
-        </h3>
-        <p className="text-textSecondary text-xs mt-1 line-clamp-2">
-          {article.description || 'Tidak ada deskripsi.'}
-        </p>
-        <a
-          href={article.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-softBlue text-xs font-medium mt-2 inline-block hover:underline"
-        >
-          Baca →
-        </a>
-      </div>
-    </div>
-  </div>
-);
+));
 
 // =========================
 // Main Component
 // =========================
 export default function PasienHome() {
+  const [riwayat, setRiwayat] = useState([]);
   const [facts, setFacts] = useState([]);
+  const [loadingCheckup, setLoadingCheckup] = useState(true);
   const [loadingFacts, setLoadingFacts] = useState(true);
   const [openIndex, setOpenIndex] = useState(null);
-  const [news, setNews] = useState([]);
-  const [loadingNews, setLoadingNews] = useState(true);
-  const [latestCheckup, setLatestCheckup] = useState(null);
-  const [loadingCheckup, setLoadingCheckup] = useState(true);
 
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   const navigate = useNavigate();
 
-  // Ambil data pemeriksaan terakhir
+  // Fetch Riwayat
   useEffect(() => {
-    const fetchLatestCheckup = async () => {
+    const fetchRiwayat = async () => {
       try {
         const { data } = await apiClient.get('/monitoring/me');
-        setLatestCheckup(data?.[0] || null);
+        const sorted = (data || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        setRiwayat(sorted);
       } catch (err) {
-        console.error('Gagal memuat pemeriksaan:', err);
+        console.error('Gagal fetch riwayat:', err);
       } finally {
         setLoadingCheckup(false);
       }
     };
-    fetchLatestCheckup();
+    fetchRiwayat();
   }, []);
 
-  // Ambil data fun facts
+  // Fetch Facts
   useEffect(() => {
-    const fetchFunFacts = async () => {
+    const fetchFacts = async () => {
       try {
         const { data } = await apiClient.get('/faq');
-        setFacts(data);
+        setFacts(data || []);
       } catch (err) {
-        console.error('Gagal memuat Fun Facts:', err);
+        console.error('Gagal fetch facts:', err);
       } finally {
         setLoadingFacts(false);
       }
     };
-    fetchFunFacts();
+    fetchFacts();
   }, []);
 
-  // Ambil berita terbaru dari API
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const res = await fetch(
-          `https://newsapi.org/v2/everything?q=diabetes&language=id&sortBy=publishedAt&apiKey=9f918ad6d2fb4d409ea49c2595261d92`
-        );
-        const { articles } = await res.json();
-        setNews(articles?.slice(0, 6) || []);
-      } catch (err) {
-        console.error('Gagal memuat berita:', err);
-      } finally {
-        setLoadingNews(false);
-      }
-    };
-    fetchNews();
-  }, []);
-
-  const toggleAccordion = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  const latestCheckup = riwayat[0] || null;
+  const toggleAccordion = (i) => setOpenIndex(openIndex === i ? null : i);
 
   return (
-    <div className="bg-neutralBg min-h-screen">
+    <div className="bg-neutralBg min-h-screen flex flex-col">
       <Header />
 
-      <main className="pt-6 pb-32 px-4 md:px-8">
+      <main className="flex-1 pt-6 pb-24 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto w-full">
         {/* Greeting */}
-        <div className="mb-6">
+        <div className="mb-7">
           <h1 className="text-2xl font-bold text-textPrimary">Beranda</h1>
-          <p className="text-textSecondary mt-1 text-sm md:text-base">
-            Selamat datang,{' '}
-            <span className="font-semibold text-primaryBlue">
-              {user?.name || 'Pasien'}
-            </span>
-            !
+          <p className="text-textSecondary text-sm mt-1">
+            Halo, <span className="font-medium text-primaryBlue">{user?.name || 'Pasien'}</span>
           </p>
         </div>
 
-        {/* Layout */}
-        <div className="block md:grid md:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="md:col-span-2 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Checkup + Stats + Chart */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Latest Checkup */}
-            <section aria-labelledby="latest-checkup">
-              {loadingCheckup ? (
-                <div className="bg-cardWhite p-6 rounded-2xl shadow-md border border-lineGray">
-                  <TextSkeleton />
-                </div>
-              ) : latestCheckup ? (
-                <LatestCheckup checkup={latestCheckup} />
-              ) : (
-                <div className="bg-cardWhite p-8 rounded-2xl shadow-md border border-lineGray text-center">
-                  <p className="text-textSecondary">Belum ada riwayat pemeriksaan.</p>
-                  <button
-                    onClick={() => navigate('/pasien/pemeriksaan')}
-                    className="mt-3 text-softBlue font-medium hover:underline"
-                  >
-                    Mulai Pemeriksaan
-                  </button>
-                </div>
-              )}
-            </section>
+            {loadingCheckup ? (
+              <SkeletonCard />
+            ) : latestCheckup ? (
+              <LatestCheckup checkup={latestCheckup} onViewHistory={() => navigate('/pasien/riwayat')} />
+            ) : (
+              <EmptyCheckup onStartCheckup={() => navigate('/pasien/pemeriksaan')} />
+            )}
 
-            {/* Fun Facts */}
-            <section aria-labelledby="fun-facts">
-              <h2
-                id="fun-facts"
-                className="text-xl font-bold text-textPrimary mb-4 flex items-center"
-              >
-                <FaLightbulb className="text-yellow-500 mr-2.5" />
-                Fun Facts Seputar Diabetes
-              </h2>
-
-              {loadingFacts ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="bg-cardWhite p-5 rounded-xl shadow-md border border-lineGray"
-                    >
-                      <TextSkeleton />
-                    </div>
-                  ))}
-                </div>
-              ) : facts.length > 0 ? (
-                <div className="space-y-3">
-                  {facts.map((fact, idx) => (
-                    <FunFactItem
-                      key={fact.id}
-                      fact={fact}
-                      isOpen={openIndex === idx}
-                      onClick={() => toggleAccordion(idx)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center text-textSecondary py-4">
-                  Tidak ada Fun Facts tersedia.
-                </p>
-              )}
-            </section>
+            {/* Stats + Chart */}
+            {riwayat.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <HealthStats riwayat={riwayat} />
+                <MiniTrendChart riwayat={riwayat} />
+              </div>
+            )}
           </div>
 
-          {/* Right Column */}
-          <div className="md:col-span-1">
-            <section aria-labelledby="latest-news">
-              <h2
-                id="latest-news"
-                className="text-xl font-bold text-textPrimary mb-4 flex items-center"
-              >
-                <FaNewspaper className="text-primaryBlue mr-2.5" />
-                Berita Terkini
-              </h2>
-
-              <div className="space-y-3 pr-2 max-h-[500px] md:max-h-[600px] overflow-y-auto">
-                {loadingNews ? (
-                  [...Array(4)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="bg-cardWhite p-4 rounded-xl shadow-md border border-lineGray flex gap-3"
-                    >
-                      <div className="w-20 h-20 bg-gray-200 rounded-lg animate-pulse" />
-                      <div className="flex-1">
-                        <TextSkeleton />
-                      </div>
-                    </div>
-                  ))
-                ) : news.length > 0 ? (
-                  news.map((article, idx) => (
-                    <NewsItem key={`${article.url}-${idx}`} article={article} />
-                  ))
-                ) : (
-                  <p className="text-center text-textSecondary py-4 text-sm">
-                    Tidak ada berita saat ini.
-                  </p>
-                )}
-              </div>
-            </section>
+          {/* Right: Fun Facts */}
+          <div>
+            <h2 className="text-lg font-semibold text-textPrimary mb-3 flex items-center">
+              <FaLightbulb className="text-yellow-500 mr-2 text-sm" />
+              Fun Facts
+            </h2>
+            <div className="space-y-3">
+              {loadingFacts ? (
+                [...Array(2)].map((_, i) => <SkeletonCard key={i} />)
+              ) : facts.length > 0 ? (
+                facts.map((fact, i) => (
+                  <FunFactItem
+                    key={fact.id}
+                    fact={fact}
+                    isOpen={openIndex === i}
+                    onToggle={() => toggleAccordion(i)}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-textSecondary text-xs py-6 bg-cardWhite rounded-2xl border border-lineGray">
+                  Tidak ada fakta.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </main>
