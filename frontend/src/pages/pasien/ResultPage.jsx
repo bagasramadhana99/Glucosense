@@ -11,8 +11,7 @@ import {
   FaChevronDown, 
   FaChevronUp,
   FaInfoCircle,
-  FaChartBar,
-  FaHeartbeat
+  FaChartBar
 } from 'react-icons/fa';
 import { getGeminiRecommendation } from '../../api/gemini';
 
@@ -37,8 +36,8 @@ export default function ResultPage() {
   const fetchRecommendation = useCallback(async () => {
     setLoadingRecommendation(true);
     try {
-      const recommendationText = await getGeminiRecommendation(result);
-      setRecommendation(recommendationText);
+      const text = await getGeminiRecommendation(result);
+      setRecommendation(text);
     } catch (error) {
       console.error('Error fetching recommendation:', error);
     } finally {
@@ -56,94 +55,98 @@ export default function ResultPage() {
   const isHighRisk = result.result === "Risiko Tinggi";
 
   return (
-    <div className="bg-neutralBg min-h-screen">
+    <div className="bg-neutralBg min-h-screen flex flex-col">
       <Header />
-      <main className="pt-6 pb-32 px-4 md:px-8">
-        
-        <div className="flex justify-between items-center mb-6">
+
+      <main className="flex-1 pt-6 pb-24 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-7">
           <h1 className="text-2xl font-bold text-textPrimary flex items-center">
             {isHighRisk ? (
-              <FaExclamationTriangle className="mr-3 text-errorRed" />
+              <FaExclamationTriangle className="mr-3 text-primaryRed" />
             ) : (
               <FaCheckCircle className="mr-3 text-successGreen" />
             )}
-            Hasil Prediksi Risiko Diabetes
+            Hasil Prediksi
           </h1>
-          <button 
-            onClick={() => navigate(-1)} 
-            className="text-sm text-textSecondary hover:text-softBlue flex items-center transition"
+          <button
+            onClick={() => navigate(-1)}
+            className="text-sm text-textSecondary hover:text-primaryBlue flex items-center transition-colors"
           >
-            <FaArrowLeft className="mr-1" /> Kembali
+            <FaArrowLeft className="mr-1.5" /> Kembali
           </button>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Hasil Prediksi dan Faktor Risiko */}
+          {/* Hasil & Faktor Risiko */}
           <div className="lg:col-span-2">
-            <div 
-              className={`bg-cardWhite p-6 md:p-8 rounded-2xl shadow-lg border border-lineGray transform transition-all duration-700 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            <div
+              className={`bg-cardWhite p-6 rounded-2xl border border-lineGray transition-all duration-500 ease-out ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
             >
-              {/* Header Card */}
-              <div className="flex items-center justify-center mb-6">
+              {/* Icon Status */}
+              <div className="flex justify-center mb-6">
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
                   isHighRisk ? 'bg-red-50' : 'bg-green-50'
                 }`}>
                   {isHighRisk ? (
-                    <FaExclamationTriangle size={36} className="text-errorRed" />
+                    <FaExclamationTriangle size={36} className="text-primaryRed" />
                   ) : (
                     <FaCheckCircle size={36} className="text-successGreen" />
                   )}
                 </div>
               </div>
-              
-              <p className="text-center text-textSecondary mb-6 text-base">
+
+              <p className="text-center text-sm text-textSecondary mb-6">
                 Berdasarkan data yang Anda masukkan, hasil analisis menunjukkan:
               </p>
-              
-              {/* Hasil Prediksi */}
+
+              {/* Hasil Utama */}
               <div className="text-center mb-8">
-                <div className={`inline-block px-8 py-4 rounded-xl shadow-sm ${
-                  isHighRisk ? 'bg-red-50 border-2 border-red-200' : 'bg-green-50 border-2 border-green-200'
+                <div className={`inline-block px-8 py-4 rounded-xl border-2 ${
+                  isHighRisk ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'
                 }`}>
-                  <p className={`text-3xl font-bold ${isHighRisk ? 'text-errorRed' : 'text-successGreen'}`}>
+                  <p className={`text-2xl font-bold ${isHighRisk ? 'text-primaryRed' : 'text-successGreen'}`}>
                     {result.result}
                   </p>
                 </div>
               </div>
 
               {/* Disclaimer */}
-              <div className="bg-neutralBg p-4 rounded-xl border border-lineGray mb-8">
-                <div className="flex items-start">
-                  <FaInfoCircle className="text-infoBlue mt-0.5 mr-3 flex-shrink-0" />
-                  <p className="text-sm text-textSecondary">
-                    <strong>Informasi Penting:</strong> Hasil ini merupakan prediksi berdasarkan model analisis data dan tidak dapat menggantikan diagnosis medis profesional. Untuk evaluasi kesehatan yang komprehensif, disarankan untuk berkonsultasi dengan tenaga medis.
-                  </p>
-                </div>
+              <div className="p-5 bg-blue-50/50 rounded-xl border border-lineGray mb-8">
+                <p className="text-xs text-textSecondary flex items-start">
+                  <FaInfoCircle className="text-primaryBlue mr-2 mt-0.5 flex-shrink-0" />
+                  <span>
+                    <strong>Catatan:</strong> Hasil ini bersifat informasional dan bukan pengganti diagnosis medis. 
+                    Konsultasikan dengan dokter untuk evaluasi lengkap.
+                  </span>
+                </p>
               </div>
 
               {/* Faktor Risiko */}
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-textPrimary flex items-center mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-textPrimary flex items-center mb-4">
                   <FaChartBar className="mr-2 text-primaryBlue" />
                   Faktor Risiko Utama
                 </h2>
-                <div className="bg-neutralBg p-6 rounded-xl">
+                <div className="bg-neutralBg/50 p-5 rounded-xl">
                   <ul className="space-y-3">
-                    {result.risk_factors && result.risk_factors.length > 0 ? (
+                    {result.risk_factors?.length > 0 ? (
                       result.risk_factors.map((f, i) => (
-                        <li key={i} className="flex items-start bg-cardWhite p-3 rounded-lg shadow-sm">
-                          <span className="text-primaryBlue mr-3 mt-1">•</span>
-                          <div className="flex-1">
+                        <li key={i} className="flex items-start bg-cardWhite p-3 rounded-lg border border-lineGray">
+                          <span className="text-primaryBlue mr-3 mt-0.5">•</span>
+                          <div className="flex-1 text-sm">
                             <span className="font-medium text-textPrimary">{f.feature}:</span>
-                            <span className="text-softBlue ml-1">{f.value}</span>
+                            <span className="text-primaryBlue ml-1">{f.value}</span>
                             {f.status && <span className="text-textSecondary ml-1">({f.status})</span>}
                           </div>
                         </li>
                       ))
                     ) : (
-                      <li className="text-textSecondary p-3 bg-cardWhite rounded-lg shadow-sm">Tidak ada faktor risiko signifikan terdeteksi.</li>
+                      <li className="text-sm text-textSecondary p-3 bg-cardWhite rounded-lg border border-lineGray">
+                        Tidak ada faktor risiko signifikan terdeteksi.
+                      </li>
                     )}
                   </ul>
                 </div>
@@ -151,58 +154,57 @@ export default function ResultPage() {
             </div>
           </div>
 
-          {/* Rekomendasi AI - Desktop View */}
-          <div className="hidden lg:block lg:col-span-1">
-            <div 
-              className={`bg-cardWhite p-6 rounded-2xl shadow-lg border border-lineGray transform transition-all duration-700 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          {/* Rekomendasi AI - Desktop */}
+          <div className="hidden lg:block">
+            <div
+              className={`bg-cardWhite p-6 rounded-2xl border border-lineGray transition-all duration-500 ease-out delay-200 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
             >
-              <h2 className="text-xl font-bold text-textPrimary flex items-center mb-6">
+              <h2 className="text-lg font-bold text-textPrimary flex items-center mb-5">
                 <FaRobot className="mr-2 text-primaryBlue" />
-                Rekomendasi AI
+                Rekomendasi
               </h2>
-              
+
               {loadingRecommendation ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue"></div>
+                <div className="flex justify-center items-center h-48">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primaryBlue"></div>
                 </div>
               ) : recommendation ? (
                 <div className="space-y-4">
-                  {/* Ringkasan AI */}
-                  <div className="bg-neutralBg p-4 rounded-xl">
-                    <h3 className="font-semibold text-textPrimary mb-3 flex items-center">
-                      <FaLightbulb className="mr-2 text-warningAmber" />
-                      Ringkasan AI
+                  <div className="p-4 bg-neutralBg/50 rounded-xl">
+                    <h3 className="font-semibold text-textPrimary mb-2 flex items-center text-sm">
+                      <FaLightbulb className="mr-2 text-amber-500" />
+                      Ringkasan
                     </h3>
-                    <p className="text-textSecondary text-sm whitespace-pre-line">{recommendation}</p>
+                    <p className="text-xs text-textSecondary whitespace-pre-line leading-relaxed">
+                      {recommendation}
+                    </p>
                   </div>
-                  
-                  {/* Catatan */}
-                  <div className="bg-infoBlue/10 p-4 rounded-xl border-l-4 border-infoBlue">
-                    <p className="text-textSecondary text-xs italic">
-                      Hasil ini merupakan prediksi berdasarkan model analisis data dan tidak dapat menggantikan diagnosis medis profesional.
+                  <div className="p-3 bg-blue-50/50 rounded-lg border-l-4 border-primaryBlue">
+                    <p className="text-xs text-textSecondary italic">
+                      Prediksi ini bersifat informasional. Konsultasikan dengan dokter.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-textSecondary">Tidak dapat memuat rekomendasi AI saat ini.</p>
-                </div>
+                <p className="text-center text-sm text-textSecondary py-8">
+                  Tidak dapat memuat rekomendas.
+                </p>
               )}
             </div>
           </div>
         </div>
 
-        {/* Tombol Rekomendasi AI - Mobile View */}
+        {/* Mobile Rekomendasi AI */}
         <div className="lg:hidden mt-6">
           <button
             onClick={() => setShowRecommendation(!showRecommendation)}
-            className="w-full bg-cardWhite p-4 rounded-xl shadow-lg border border-lineGray flex justify-between items-center transition-all duration-300"
+            className="w-full p-4 bg-cardWhite rounded-xl border border-lineGray flex justify-between items-center transition-all hover:shadow"
           >
             <h2 className="text-lg font-bold text-textPrimary flex items-center">
               <FaRobot className="mr-2 text-primaryBlue" />
-              Rekomendasi AI
+              Rekomendasi
             </h2>
             {showRecommendation ? (
               <FaChevronUp className="text-primaryBlue" />
@@ -211,40 +213,39 @@ export default function ResultPage() {
             )}
           </button>
 
-          {/* Rekomendasi AI Content - Mobile View */}
           {showRecommendation && (
-            <div className="mt-4 bg-cardWhite p-6 rounded-xl shadow-lg border border-lineGray">
+            <div className="mt-4 p-6 bg-cardWhite rounded-xl border border-lineGray">
               {loadingRecommendation ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue"></div>
+                <div className="flex justify-center items-center h-40">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primaryBlue"></div>
                 </div>
               ) : recommendation ? (
                 <div className="space-y-4">
-                  {/* Ringkasan AI */}
-                  <div className="bg-neutralBg p-4 rounded-xl">
-                    <h3 className="font-semibold text-textPrimary mb-3 flex items-center">
-                      <FaLightbulb className="mr-2 text-warningAmber" />
-                      Ringkasan AI
+                  <div className="p-4 bg-neutralBg/50 rounded-xl">
+                    <h3 className="font-semibold text-textPrimary mb-2 flex items-center text-sm">
+                      <FaLightbulb className="mr-2 text-amber-500" />
+                      Ringkasan
                     </h3>
-                    <p className="text-textSecondary text-sm whitespace-pre-line">{recommendation}</p>
+                    <p className="text-xs text-textSecondary whitespace-pre-line leading-relaxed">
+                      {recommendation}
+                    </p>
                   </div>
-                  
-                  {/* Catatan */}
-                  <div className="bg-infoBlue/10 p-4 rounded-xl border-l-4 border-infoBlue">
-                    <p className="text-textSecondary text-xs italic">
-                      Hasil ini merupakan prediksi berdasarkan model analisis data dan tidak dapat menggantikan diagnosis medis profesional.
+                  <div className="p-3 bg-blue-50/50 rounded-lg border-l-4 border-primaryBlue">
+                    <p className="text-xs text-textSecondary italic">
+                      Prediksi ini bersifat informasional. Konsultasikan dengan dokter.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-textSecondary">Tidak dapat memuat rekomendasi AI saat ini.</p>
-                </div>
+                <p className="text-center text-sm text-textSecondary py-8">
+                  Tidak dapat memuat rekomendasi.
+                </p>
               )}
             </div>
           )}
         </div>
       </main>
+
       <BottomNav />
     </div>
   );

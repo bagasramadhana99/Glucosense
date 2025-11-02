@@ -7,20 +7,11 @@ import { FaHeartbeat, FaCalendarAlt, FaChartLine } from "react-icons/fa";
 
 // === Skeleton Loader ===
 const SkeletonCard = () => (
-  <div className="bg-cardWhite p-6 rounded-2xl shadow-md border border-lineGray animate-pulse">
-    <div className="flex justify-between items-center mb-4">
-      <div className="h-5 bg-gray-200 rounded w-40"></div>
-      <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
-    </div>
-    <div className="grid grid-cols-2 gap-8">
-      <div className="text-center">
-        <div className="h-4 bg-gray-200 rounded w-24 mx-auto mb-2"></div>
-        <div className="h-10 bg-gray-200 rounded w-20 mx-auto"></div>
-      </div>
-      <div className="text-center">
-        <div className="h-4 bg-gray-200 rounded w-24 mx-auto mb-2"></div>
-        <div className="h-10 bg-gray-200 rounded w-20 mx-auto"></div>
-      </div>
+  <div className="bg-cardWhite p-6 rounded-2xl border border-lineGray animate-pulse">
+    <div className="h-5 bg-gray-200 rounded w-36 mb-4"></div>
+    <div className="space-y-2">
+      <div className="h-4 bg-gray-200 rounded w-full"></div>
+      <div className="h-4 bg-gray-200 rounded w-4/5"></div>
     </div>
   </div>
 );
@@ -28,281 +19,238 @@ const SkeletonCard = () => (
 // === Statistik Ringkasan ===
 const StatisticsCard = memo(({ riwayat }) => {
   const stats = useMemo(() => {
-    if (riwayat.length === 0) {
-      return {
-        avgGlucose: 0,
-        minGlucose: 0,
-        maxGlucose: 0,
-        avgHeartRate: 0,
-        minHeartRate: 0,
-        maxHeartRate: 0,
-        totalCheckups: 0
-      };
-    }
-
-    const glucoseValues = riwayat.map(r => r.glucose_level);
-    const heartRateValues = riwayat.map(r => r.heart_rate);
-
+    if (!riwayat.length) return null;
+    const g = riwayat.map(r => r.glucose_level);
+    const h = riwayat.map(r => r.heart_rate);
     return {
-      avgGlucose: Math.round(glucoseValues.reduce((a, b) => a + b, 0) / glucoseValues.length),
-      minGlucose: Math.min(...glucoseValues),
-      maxGlucose: Math.max(...glucoseValues),
-      avgHeartRate: Math.round(heartRateValues.reduce((a, b) => a + b, 0) / heartRateValues.length),
-      minHeartRate: Math.min(...heartRateValues),
-      maxHeartRate: Math.max(...heartRateValues),
-      totalCheckups: riwayat.length
+      total: riwayat.length,
+      avgG: Math.round(g.reduce((a, b) => a + b, 0) / g.length),
+      minG: Math.min(...g),
+      maxG: Math.max(...g),
+      avgH: Math.round(h.reduce((a, b) => a + b, 0) / h.length),
+      minH: Math.min(...h),
+      maxH: Math.max(...h),
     };
   }, [riwayat]);
 
+  if (!stats) return (
+    <div className="bg-cardWhite p-5 rounded-2xl border border-lineGray text-center py-8">
+      <p className="text-textSecondary text-sm">Belum ada data</p>
+    </div>
+  );
+
   return (
-    <div className="bg-cardWhite p-5 rounded-2xl shadow-md border border-lineGray">
-      <div className="flex items-center mb-4">
-        <FaChartLine className="text-primaryBlue mr-2" />
-        <h2 className="text-lg font-semibold text-textPrimary">Statistik Kesehatan</h2>
-      </div>
-
-      {riwayat.length === 0 ? (
-        <p className="text-textSecondary text-center py-4">Belum ada data untuk ditampilkan</p>
-      ) : (
-        <div className="space-y-4">
-          <div className="border-b border-lineGray pb-3">
-            <p className="text-textSecondary text-sm mb-1">Total Pemeriksaan</p>
-            <p className="text-2xl font-semibold text-textPrimary">{stats.totalCheckups}</p>
-          </div>
-
-          <div className="border-b border-lineGray pb-3">
-            <p className="text-textSecondary text-sm mb-2">Gula Darah (mg/dL)</p>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <p className="text-xs text-textSecondary">Rata-rata</p>
-                <p className="text-lg font-semibold text-textPrimary">{stats.avgGlucose}</p>
-              </div>
-              <div>
-                <p className="text-xs text-textSecondary">Terendah</p>
-                <p className="text-lg font-semibold text-textPrimary">{stats.minGlucose}</p>
-              </div>
-              <div>
-                <p className="text-xs text-textSecondary">Tertinggi</p>
-                <p className="text-lg font-semibold text-textPrimary">{stats.maxGlucose}</p>
-              </div>
+    <div className="bg-cardWhite p-5 rounded-2xl border border-lineGray">
+      <h3 className="text-base font-semibold text-textPrimary mb-3 flex items-center">
+        <FaChartLine className="text-primaryBlue mr-2 text-sm" />
+        Ringkasan
+      </h3>
+      <div className="space-y-3 text-sm">
+        <div className="flex justify-between">
+          <span className="text-textSecondary">Total</span>
+          <span className="font-medium">{stats.total} kali</span>
+        </div>
+        <div className="pt-2 border-t border-lineGray text-xs">
+          <p className="text-textSecondary mb-2">Glukosa (mg/dL)</p>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <p className="text-textSecondary">Rata-rata</p>
+              <p className="font-semibold">{stats.avgG}</p>
             </div>
-          </div>
-
-          <div>
-            <p className="text-textSecondary text-sm mb-2">Detak Jantung (bpm)</p>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <p className="text-xs text-textSecondary">Rata-rata</p>
-                <p className="text-lg font-semibold text-textPrimary">{stats.avgHeartRate}</p>
-              </div>
-              <div>
-                <p className="text-xs text-textSecondary">Terendah</p>
-                <p className="text-lg font-semibold text-textPrimary">{stats.minHeartRate}</p>
-              </div>
-              <div>
-                <p className="text-xs text-textSecondary">Tertinggi</p>
-                <p className="text-lg font-semibold text-textPrimary">{stats.maxHeartRate}</p>
-              </div>
+            <div>
+              <p className="text-successGreen">Terendah</p>
+              <p className="font-semibold text-successGreen">{stats.minG}</p>
+            </div>
+            <div>
+              <p className="text-errorRed">Tertinggi</p>
+              <p className="font-semibold text-errorRed">{stats.maxG}</p>
             </div>
           </div>
         </div>
-      )}
+        <div className="pt-3 border-t border-lineGray text-xs">
+          <p className="text-textSecondary mb-2">Detak Jantung (bpm)</p>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <p className="text-textSecondary">Rata-rata</p>
+              <p className="font-semibold">{stats.avgH}</p>
+            </div>
+            <div>
+              <p className="text-successGreen">Terendah</p>
+              <p className="font-semibold text-successGreen">{stats.minH}</p>
+            </div>
+            <div>
+              <p className="text-errorRed">Tertinggi</p>
+              <p className="font-semibold text-errorRed">{stats.maxH}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 });
+
+// === Item Riwayat ===
+const HistoryItem = memo(({ item }) => {
+  const date = new Date(item.timestamp);
+  const formatted = date.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const time = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <div className="bg-cardWhite p-6 rounded-2xl border border-lineGray">
+      <div className="flex justify-between items-center mb-3">
+        <p className="text-sm text-textSecondary flex items-center">
+          <FaCalendarAlt className="mr-1.5 text-xs" />
+          {formatted} • {time} WIB
+        </p>
+        <FaHeartbeat className="text-primaryRed text-lg" />
+      </div>
+      <div className="grid grid-cols-2 gap-6 text-center">
+        <div>
+          <p className="text-xs text-textSecondary mb-1">Glukosa</p>
+          <p className="text-2xl font-bold text-textPrimary">
+            {item.glucose_level}
+            <span className="text-sm font-normal text-textSecondary ml-1">mg/dL</span>
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-textSecondary mb-1">Detak Jantung</p>
+          <p className="text-2xl font-bold text-textPrimary">
+            {item.heart_rate}
+            <span className="text-sm font-normal text-textSecondary ml-1">bpm</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// === Empty State ===
+const EmptyState = memo(({ onStart }) => (
+  <div className="bg-cardWhite p-8 rounded-2xl border border-lineGray text-center">
+    <div className="w-16 h-16 mx-auto bg-primaryBlue/10 rounded-full flex items-center justify-center mb-4">
+      <FaHeartbeat className="text-primaryRed text-2xl" />
+    </div>
+    <h3 className="text-lg font-semibold text-textPrimary mb-1">Belum Ada Riwayat</h3>
+    <p className="text-sm text-textSecondary mb-4">Mulai pemeriksaan untuk melihat catatan Anda.</p>
+    <button
+      onClick={onStart}
+      className="text-sm font-medium text-primaryBlue hover:text-softBlue transition"
+    >
+      Mulai Pemeriksaan
+    </button>
+  </div>
+));
 
 // === Komponen Utama ===
 export default function RiwayatPage() {
   const [riwayat, setRiwayat] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  const itemsPerPage = 5;
   const navigate = useNavigate();
 
-  // === Ambil User dari sessionStorage ===
+  // === User Check ===
   useEffect(() => {
-    try {
-      const userData = JSON.parse(sessionStorage.getItem("user"));
-      if (!userData || !userData.id) {
-        navigate("/login", { replace: true });
-      } else {
-        setUser(userData);
-      }
-    } catch (err) {
-      console.error("Gagal parse user:", err);
+    const userData = JSON.parse(sessionStorage.getItem("user") || "{}");
+    if (!userData?.id) {
       navigate("/login", { replace: true });
+    } else {
+      setUser(userData);
     }
   }, [navigate]);
 
-  // === Fetch Riwayat dengan Polling Aman ===
+  // === Fetch Riwayat ===
   const fetchRiwayat = useCallback(async () => {
     if (!user) return;
-
     try {
-      const response = await apiClient.get("/monitoring/me");
-      const data = response.data || [];
-
-      // Urutkan dari terbaru ke terlama
-      const sorted = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const { data } = await apiClient.get("/monitoring/me");
+      const sorted = (data || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       setRiwayat(sorted);
-      setError("");
     } catch (err) {
       console.error("Gagal fetch riwayat:", err);
-      if (!error) {
-        setError("Gagal memuat riwayat. Coba lagi nanti.");
-      }
     } finally {
       setLoading(false);
     }
-  }, [user, error]);
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
-
     fetchRiwayat();
-    const intervalId = setInterval(fetchRiwayat, 5000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
+    const id = setInterval(fetchRiwayat, 5000);
+    return () => clearInterval(id);
   }, [user, fetchRiwayat]);
 
   // === Pagination ===
-  const totalPages = Math.max(1, Math.ceil(riwayat.length / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const displayedRiwayat = useMemo(() => {
-    return riwayat.slice(startIndex, startIndex + itemsPerPage);
-  }, [riwayat, startIndex, itemsPerPage]);
+  const totalPages = Math.ceil(riwayat.length / itemsPerPage) || 1;
+  const start = (currentPage - 1) * itemsPerPage;
+  const displayed = useMemo(() => riwayat.slice(start, start + itemsPerPage), [riwayat, start, itemsPerPage]);
 
-  const goToPage = useCallback((page) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  }, [totalPages]);
-
-  // === Format Tanggal WIB ===
-  const formatWIB = (timestamp) => {
-    const date = new Date(timestamp);
-    const wib = new Date(date.getTime() + 7 * 60 * 60 * 1000); // UTC+7
-    return wib.toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }) + " WIB";
-  };
+  const goToPage = (page) => setCurrentPage(Math.max(1, Math.min(page, totalPages)));
 
   return (
-    <div className="bg-neutralBg min-h-screen">
+    <div className="bg-neutralBg min-h-screen flex flex-col">
       <Header />
-      <main className="pt-6 pb-32 px-4 md:px-8 max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-textPrimary">
-            Riwayat Pemeriksaan
-          </h1>
-          <p className="text-textSecondary mt-2 text-sm md:text-base">
-            Catatan hasil pemeriksaan kadar glukosa dan detak jantung Anda.
+
+      <main className="flex-1 pt-6 pb-24 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto w-full">
+        {/* Header */}
+        <div className="mb-7">
+          <h1 className="text-2xl font-bold text-textPrimary">Riwayat</h1>
+          <p className="text-textSecondary text-sm mt-1">
+            Catatan hasil pemeriksaan glukosa dan detak jantung Anda.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* === Kolom Kanan - Statistik (Pertama di Mobile) === */}
-          <div className="md:col-span-1 order-first md:order-last">
-            <StatisticsCard riwayat={riwayat} />
-          </div>
-
-          {/* === Kolom Kiri - Daftar Riwayat (Kedua di Mobile) === */}
-          <div className="md:col-span-2 order-last md:order-first space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Daftar Riwayat */}
+          <div className="lg:col-span-2 space-y-6">
             {loading ? (
-              <div className="space-y-6">
-                {[...Array(3)].map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))}
-              </div>
-            ) : error && riwayat.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-errorRed text-lg">{error}</p>
-              </div>
+              [...Array(3)].map((_, i) => <SkeletonCard key={i} />)
             ) : riwayat.length === 0 ? (
-              <div className="bg-cardWhite p-8 rounded-2xl shadow-lg border border-lineGray text-center">
-                <p className="text-textSecondary text-lg">
-                  Belum ada data riwayat pemeriksaan.
-                </p>
-                <button
-                  onClick={() => navigate("/pasien/pemeriksaan")}
-                  className="mt-4 inline-block px-6 py-2 bg-primaryBlue text-white rounded-lg font-medium hover:bg-softBlue transition"
-                >
-                  Mulai Pemeriksaan
-                </button>
-              </div>
+              <EmptyState onStart={() => navigate("/pasien/pemeriksaan")} />
             ) : (
               <>
-                {displayedRiwayat.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-cardWhite p-6 rounded-2xl shadow-md border border-lineGray hover:shadow-lg transition-all duration-300"
-                  >
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center text-textSecondary text-sm">
-                        <FaCalendarAlt className="mr-2 text-softBlue" />
-                        {formatWIB(item.timestamp)}
-                      </div>
-                      <FaHeartbeat className="text-primaryRed text-xl animate-pulse" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-8 text-center">
-                      <div>
-                        <p className="text-textSecondary text-sm">Glukosa Darah</p>
-                        <p className="text-3xl font-semibold text-textPrimary mt-2">
-                          {item.glucose_level}{" "}
-                          <span className="text-sm font-normal text-textSecondary">
-                            mg/dL
-                          </span>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-textSecondary text-sm">Detak Jantung</p>
-                        <p className="text-3xl font-semibold text-textPrimary mt-2">
-                          {item.heart_rate}{" "}
-                          <span className="text-sm font-normal text-textSecondary">
-                            bpm
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                {displayed.map((item) => (
+                  <HistoryItem key={item.id} item={item} />
                 ))}
 
-                {/* === Pagination === */}
+                {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-3 mt-8">
+                  <div className="flex justify-center items-center gap-4 mt-6">
                     <button
                       onClick={() => goToPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="px-4 py-2 rounded-lg border border-lineGray text-softBlue disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutralBg transition"
-                      aria-label="Halaman sebelumnya"
+                      className="text-sm text-softBlue disabled:text-gray-400 hover:underline"
                     >
-                      ←
+                      ← Sebelumnya
                     </button>
-                    <span className="text-textSecondary font-medium">
+                    <span className="text-xs text-textSecondary">
                       Halaman {currentPage} dari {totalPages}
                     </span>
                     <button
                       onClick={() => goToPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="px-4 py-2 rounded-lg border border-lineGray text-softBlue disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutralBg transition"
-                      aria-label="Halaman berikutnya"
+                      className="text-sm text-softBlue disabled:text-gray-400 hover:underline"
                     >
-                      →
+                      Berikutnya →
                     </button>
                   </div>
                 )}
               </>
             )}
           </div>
+
+          {/* Right: Statistik */}
+          <div>
+            <StatisticsCard riwayat={riwayat} />
+          </div>
         </div>
       </main>
+
       <BottomNav />
     </div>
   );
