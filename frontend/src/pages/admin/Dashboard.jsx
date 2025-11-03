@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import apiClient from '../../api/axiosConfig';
-import { FaUser, FaChevronLeft, FaChevronRight, FaChartBar } from 'react-icons/fa';
+import { FaUsers, FaChevronLeft, FaChevronRight, FaChartBar } from 'react-icons/fa';
 import {
   BarChart,
   Bar,
@@ -12,34 +12,34 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-// === StatCard: Kompak, ikon kecil, teks seimbang ===
+// === StatCard: Ikon lebih relevan, teks umum ===
 function StatCard({ title, value, loading }) {
   if (loading) {
     return (
-      <div className="bg-cardWhite p-5 rounded-xl shadow-sm border border-lineGray h-full flex items-center space-x-3 animate-pulse">
-        <div className="w-10 h-10 bg-gray-200 rounded-full" />
-        <div>
-          <div className="h-3 bg-gray-200 rounded w-20 mb-1.5" />
-          <div className="h-7 bg-gray-200 rounded w-16" />
+      <div className="bg-cardWhite p-5 rounded-xl shadow-sm border border-lineGray h-full flex items-center space-x-4 animate-pulse">
+        <div className="w-11 h-11 bg-gray-200 rounded-lg" />
+        <div className="flex-1">
+          <div className="h-3 bg-gray-200 rounded w-24 mb-2" />
+          <div className="h-8 bg-gray-200 rounded w-20" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-cardWhite p-5 rounded-xl shadow-sm border border-lineGray h-full flex items-center space-x-3 hover:shadow-md transition-shadow">
-      <div className="p-2.5 rounded-lg bg-primaryBlue/10">
-        <FaUser className="text-lg text-primaryBlue" />
+    <div className="bg-cardWhite p-5 rounded-xl shadow-sm border border-lineGray h-full flex items-center space-x-4 hover:shadow-md transition-shadow duration-200">
+      <div className="p-3 rounded-lg bg-primaryBlue/10 flex-shrink-0">
+        <FaUsers className="text-xl text-primaryBlue" />
       </div>
       <div>
-        <p className="text-xs font-medium text-textSecondary">{title}</p>
-        <p className="text-2xl font-bold text-textPrimary mt-0.5">{value}</p>
+        <p className="text-sm font-medium text-textSecondary">{title}</p>
+        <p className="text-3xl font-bold text-textPrimary mt-1">{value.toLocaleString()}</p>
       </div>
     </div>
   );
 }
 
-// === Calendar: Ramping, Senin mulai, hari ini bold & circle ===
+// === Calendar: Lebih rapi, hari ini dengan border & bold ===
 function Calendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -51,7 +51,7 @@ function Calendar() {
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-  const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1; // Senin = 0
+  const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1; // Senin mulai
 
   const handlePrevMonth = () => {
     if (currentMonth === 0) {
@@ -83,6 +83,7 @@ function Calendar() {
         <button
           onClick={handlePrevMonth}
           className="p-1.5 rounded-lg hover:bg-neutralBg transition-colors text-textSecondary hover:text-primaryBlue"
+          aria-label="Bulan sebelumnya"
         >
           <FaChevronLeft size={14} />
         </button>
@@ -93,18 +94,19 @@ function Calendar() {
         <button
           onClick={handleNextMonth}
           className="p-1.5 rounded-lg hover:bg-neutralBg transition-colors text-textSecondary hover:text-primaryBlue"
+          aria-label="Bulan berikutnya"
         >
           <FaChevronRight size={14} />
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-px text-center font-medium text-textSecondary mb-1">
+      <div className="grid grid-cols-7 gap-px text-center font-semibold text-textSecondary text-xs mb-1">
         {['S', 'S', 'R', 'K', 'J', 'S', 'M'].map((d) => (
-          <div key={d} className="py-1 text-xs">{d}</div>
+          <div key={d} className="py-1">{d}</div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-px text-center">
+      <div className="grid grid-cols-7 gap-px text-center text-xs">
         {Array.from({ length: startOffset }).map((_, i) => (
           <div key={`empty-${i}`} />
         ))}
@@ -115,10 +117,10 @@ function Calendar() {
           return (
             <div
               key={day}
-              className={`py-1.5 text-xs rounded-full transition-colors cursor-default ${
+              className={`py-2 rounded-full transition-colors ${
                 today
-                  ? 'bg-primaryBlue text-white font-bold'
-                  : 'hover:bg-primaryBlue/5'
+                  ? 'bg-primaryBlue text-white font-bold ring-2 ring-primaryBlue ring-offset-2'
+                  : 'hover:bg-primaryBlue/10 text-textPrimary'
               }`}
             >
               {day}
@@ -161,7 +163,7 @@ export default function Dashboard() {
         setPatientData({ total: totalPatients, monthly: chartData });
       } catch (err) {
         console.error('Gagal mengambil data:', err);
-        setError('Gagal memuat data pasien.');
+        setError('Gagal memuat data pasien. Silakan coba lagi.');
       } finally {
         setLoading(false);
       }
@@ -178,21 +180,23 @@ export default function Dashboard() {
         {/* Header */}
         <header className="mb-6">
           <h1 className="text-2xl font-bold text-textPrimary">Dashboard</h1>
-          <p className="text-sm text-textSecondary mt-1">Pantau statistik pendaftaran pasien secara real-time</p>
+          <p className="text-sm text-textSecondary mt-1">
+            Pantau statistik pendaftaran pasien secara real-time
+          </p>
         </header>
 
         {/* Grid: StatCard (2/3) + Kalender (1/3) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+          <div className="md:col-span-2">
             {error ? (
-              <div className="bg-cardWhite p-5 rounded-xl shadow-sm border border-lineGray text-errorRed h-full flex items-center justify-center text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 p-5 rounded-xl h-full flex items-center justify-center text-sm font-medium">
                 {error}
               </div>
             ) : (
-              <StatCard title="Total Pasien" value={patientData.total} loading={loading} />
+              <StatCard title="Jumlah Pasien" value={patientData.total} loading={loading} />
             )}
           </div>
-          <div>
+          <div className="md:col-span-1">
             <Calendar />
           </div>
         </div>
@@ -201,28 +205,32 @@ export default function Dashboard() {
         <section className="bg-cardWhite p-5 rounded-xl shadow-sm border border-lineGray">
           <h2 className="text-base font-semibold text-textPrimary mb-4 flex items-center gap-2">
             <FaChartBar className="text-primaryBlue" />
-            Grafik Pendaftaran Pasien
+            Grafik Pendaftaran Pasien per Bulan
           </h2>
 
           <div className="h-72 md:h-80">
             {loading ? (
               <div className="flex items-center justify-center h-full">
-                <p className="text-sm text-textSecondary">Memuat grafik...</p>
+                <div className="text-sm text-textSecondary">Memuat grafik...</div>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-full text-sm text-errorRed">
+                Data tidak tersedia
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={patientData.monthly} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                <BarChart data={patientData.monthly} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                   <XAxis
                     dataKey="name"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    tick={{ fontSize: 12, fill: '#6B7280' }}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
+                    tick={{ fontSize: 12, fill: '#6B7280' }}
                   />
                   <Tooltip
                     contentStyle={{
@@ -232,13 +240,15 @@ export default function Dashboard() {
                       fontSize: '13px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     }}
+                    labelStyle={{ color: '#1F2937', fontWeight: '600' }}
+                    formatter={(value) => [`${value} pasien`, 'Jumlah']}
                     cursor={{ fill: 'rgba(30, 58, 95, 0.05)' }}
                   />
                   <Bar
                     dataKey="value"
                     fill="#1E3A5F"
-                    barSize={24}
-                    radius={[6, 6, 0, 0]}
+                    barSize={28}
+                    radius={[8, 8, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
