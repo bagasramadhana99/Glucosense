@@ -3,7 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/axiosConfig';
 import Header from '../../components/Header';
 import BottomNav from '../../components/BottomNav';
-import { FaChartLine, FaInfoCircle, FaCalendarAlt, FaExclamationTriangle, FaArrowRight } from 'react-icons/fa';
+import { 
+  FaChartLine, 
+  FaInfoCircle, 
+  FaCalendarAlt, 
+  FaExclamationTriangle, 
+  FaArrowRight,
+  FaArrowLeft // <-- Tambahkan ini
+} from 'react-icons/fa';
 
 // Skeleton Loader
 const GlucoseDataSkeleton = () => (
@@ -85,16 +92,23 @@ export default function GlucoseTrendPage() {
       <Header />
 
       <main className="flex-1 pt-6 pb-24 px-4 md:px-8 lg:px-12 max-w-4xl mx-auto w-full">
-        {/* Header */}
-        <div className="mb-7">
+        {/* Header dengan Tombol Kembali */}
+        <div className="flex items-center justify-between mb-7">
           <h1 className="text-2xl font-bold text-textPrimary flex items-center">
             <FaChartLine className="mr-3 text-primaryBlue" />
             Prediksi Tren Glukosa
           </h1>
-          <p className="text-sm text-textSecondary mt-1">
-            Analisis 3 data terakhir untuk proyeksi 5 hari ke depan.
-          </p>
+          <button
+            onClick={() => navigate(-1)}
+            className="text-sm text-textSecondary hover:text-primaryBlue flex items-center transition-colors"
+          >
+            <FaArrowLeft className="mr-1.5" /> Kembali
+          </button>
         </div>
+
+        <p className="text-sm text-textSecondary mt-1 mb-6">
+          Analisis 3 data terakhir untuk proyeksi 5 hari ke depan.
+        </p>
 
         {/* Loading */}
         {loadingHistory && <GlucoseDataSkeleton />}

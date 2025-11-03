@@ -91,7 +91,7 @@ const LoginPage = () => {
             Selamat Datang Kembali
           </h2>
           <p className="text-textSecondary mb-8 text-center md:text-left">
-            Silakan login untuk mengakses dashboard GlucoSense Anda.
+            Silakan login untuk mengakses dashboard Glucosense Anda.
           </p>
 
           {/* Form */}

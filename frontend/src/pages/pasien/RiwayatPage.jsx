@@ -205,9 +205,15 @@ export default function RiwayatPage() {
           </p>
         </div>
 
+        {/* Responsif Grid: Mobile = Stats di atas, Desktop = Stats di kanan */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Daftar Riwayat */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* === STATISTIK (di atas pada mobile) === */}
+          <div className="order-1 lg:order-2 lg:col-span-1">
+            <StatisticsCard riwayat={riwayat} />
+          </div>
+
+          {/* === DAFTAR RIWAYAT (di bawah stats pada mobile) === */}
+          <div className="order-2 lg:order-1 lg:col-span-2 space-y-6">
             {loading ? (
               [...Array(3)].map((_, i) => <SkeletonCard key={i} />)
             ) : riwayat.length === 0 ? (
@@ -226,7 +232,7 @@ export default function RiwayatPage() {
                       disabled={currentPage === 1}
                       className="text-sm text-softBlue disabled:text-gray-400 hover:underline"
                     >
-                      ← Sebelumnya
+                      Sebelumnya
                     </button>
                     <span className="text-xs text-textSecondary">
                       Halaman {currentPage} dari {totalPages}
@@ -236,17 +242,12 @@ export default function RiwayatPage() {
                       disabled={currentPage === totalPages}
                       className="text-sm text-softBlue disabled:text-gray-400 hover:underline"
                     >
-                      Berikutnya →
+                      Berikutnya
                     </button>
                   </div>
                 )}
               </>
             )}
-          </div>
-
-          {/* Right: Statistik */}
-          <div>
-            <StatisticsCard riwayat={riwayat} />
           </div>
         </div>
       </main>

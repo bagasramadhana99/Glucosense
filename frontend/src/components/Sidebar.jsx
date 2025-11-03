@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FaHome,
   FaUser,
@@ -10,22 +10,32 @@ import {
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Fungsi untuk kembali ke dashboard
+  const handleLogoClick = () => {
+    navigate('/admin/dashboard');
+  };
 
   return (
     <div className="w-64 bg-cardWhite text-textPrimary p-6 flex flex-col justify-between min-h-screen border-r border-lineGray shadow-sm">
       <div>
-        {/* === LOGO & BRAND === */}
-        <div className="mb-10 flex items-center justify-center space-x-2.5">
+        {/* === LOGO & BRAND (Klikable ke Dashboard) === */}
+        <button
+          onClick={handleLogoClick}
+          className="mb-10 flex items-center justify-center space-x-2.5 w-full hover:bg-neutralBg rounded-xl p-2 transition-colors cursor-pointer group"
+          aria-label="Kembali ke Dashboard"
+        >
           <img
             src="/Glucosense.png"
             alt="Glucosense"
-            className="h-9 w-9 object-contain"
+            className="h-9 w-9 object-contain group-hover:scale-105 transition-transform"
           />
           <h1 className="text-xl font-bold">
             <span className="text-primaryBlue">Gluco</span>
             <span className="text-primaryRed">sense</span>
           </h1>
-        </div>
+        </button>
 
         {/* === NAVIGASI === */}
         <nav className="space-y-1">

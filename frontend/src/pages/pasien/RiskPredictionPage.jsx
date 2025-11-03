@@ -3,7 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/axiosConfig';
 import Header from '../../components/Header';
 import BottomNav from '../../components/BottomNav';
-import { FaStethoscope, FaInfoCircle, FaExclamationTriangle, FaCalculator, FaCheckCircle } from 'react-icons/fa';
+import { 
+  FaStethoscope, 
+  FaInfoCircle, 
+  FaExclamationTriangle, 
+  FaCalculator, 
+  FaCheckCircle,
+  FaArrowLeft // <-- Tambahkan ini
+} from 'react-icons/fa';
 
 export default function RiskPredictionPage() {
   const navigate = useNavigate();
@@ -90,16 +97,23 @@ export default function RiskPredictionPage() {
       <Header />
 
       <main className="flex-1 pt-6 pb-24 px-4 md:px-8 lg:px-12 max-w-4xl mx-auto w-full">
-        {/* Header */}
-        <div className="mb-7">
+        {/* Header dengan Tombol Kembali */}
+        <div className="flex items-center justify-between mb-7">
           <h1 className="text-2xl font-bold text-textPrimary flex items-center">
             <FaStethoscope className="mr-3 text-primaryRed" />
             Prediksi Risiko Diabetes
           </h1>
-          <p className="text-sm text-textSecondary mt-1">
-            Isi data kesehatan Anda untuk melihat estimasi risiko diabetes.
-          </p>
+          <button
+            onClick={() => navigate(-1)}
+            className="text-sm text-textSecondary hover:text-primaryBlue flex items-center transition-colors"
+          >
+            <FaArrowLeft className="mr-1.5" /> Kembali
+          </button>
         </div>
+
+        <p className="text-sm text-textSecondary mt-1 mb-6">
+          Isi data kesehatan Anda untuk melihat estimasi risiko diabetes.
+        </p>
 
         {/* Form Card */}
         <form onSubmit={handleSubmit} className="bg-cardWhite p-6 rounded-2xl border border-lineGray space-y-7">
@@ -282,63 +296,63 @@ export default function RiskPredictionPage() {
             </div>
             <div className="mt-5">
               <label htmlFor="smoking_history" className="block text-sm font-medium text-textPrimary mb-1.5">Riwayat Merokok</label>
-              <select
-                id="smoking_history"
-                name="smoking_history"
-                value={formData.smoking_history}
-                onChange={handleChange}
-                className="w-full p-3 border border-lineGray rounded-lg focus:ring-2 focus:ring-primaryBlue focus:border-primaryBlue"
-              >
-                <option value="0">Tidak Pernah</option>
-                <option value="1">Mantan Perokok</option>
-                <option value="2">Perokok Aktif</option>
-              </select>
+                <select
+                  id="smoking_history"
+                  name="smoking_history"
+                  value={formData.smoking_history}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-lineGray rounded-lg focus:ring-2 focus:ring-primaryBlue focus:border-primaryBlue"
+                >
+                  <option value="0">Tidak Pernah</option>
+                  <option value="1">Mantan Perokok</option>
+                  <option value="2">Perokok Aktif</option>
+                </select>
+              </div>
+            </section>
+
+            {/* Disclaimer */}
+            <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200">
+              <p className="text-xs text-textSecondary flex items-start">
+                <FaExclamationTriangle className="text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
+                <span>
+                  <strong>Disclaimer:</strong> Prediksi ini hanya informasional. Bukan pengganti diagnosis dokter. 
+                  Selalu konsultasikan hasil dengan tenaga medis profesional.
+                </span>
+              </p>
             </div>
-          </section>
 
-          {/* Disclaimer */}
-          <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200">
-            <p className="text-xs text-textSecondary flex items-start">
-              <FaExclamationTriangle className="text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
-              <span>
-                <strong>Disclaimer:</strong> Prediksi ini hanya informasional. Bukan pengganti diagnosis dokter. 
-                Selalu konsultasikan hasil dengan tenaga medis profesional.
-              </span>
-            </p>
-          </div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading || !formData.hba1c_level}
+              className="w-full py-3 px-4 bg-primaryBlue hover:bg-blue-600 disabled:bg-mutedGray disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm flex items-center justify-center transition-all duration-200 hover:shadow"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Memproses...
+                </>
+              ) : (
+                <>
+                  <FaCheckCircle className="mr-2" />
+                  Dapatkan Prediksi Risiko
+                </>
+              )}
+            </button>
+          </form>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading || !formData.hba1c_level}
-            className="w-full py-3 px-4 bg-primaryBlue hover:bg-blue-600 disabled:bg-mutedGray disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm flex items-center justify-center transition-all duration-200 hover:shadow"
-          >
-            {isLoading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Memproses...
-              </>
-            ) : (
-              <>
-                <FaCheckCircle className="mr-2" />
-                Dapatkan Prediksi Risiko
-              </>
-            )}
-          </button>
-        </form>
+          {/* Error */}
+          {error && (
+            <div className="mt-6 p-4 bg-red-50/50 rounded-xl border border-red-200">
+              <p className="text-sm text-primaryRed text-center">{error}</p>
+            </div>
+          )}
+        </main>
 
-        {/* Error */}
-        {error && (
-          <div className="mt-6 p-4 bg-red-50/50 rounded-xl border border-red-200">
-            <p className="text-sm text-primaryRed text-center">{error}</p>
-          </div>
-        )}
-      </main>
-
-      <BottomNav />
-    </div>
-  );
-}
+        <BottomNav />
+      </div>
+    );
+  }
