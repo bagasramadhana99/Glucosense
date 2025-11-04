@@ -11,10 +11,22 @@ from models.user_model import (
 )
 from mysql.connector import Error as MySQLError
 
+# <-- TAMBAH: Impor decorator dari file auth Anda
+# (Asumsikan file Anda bernama 'auth_bp.py' atau 'auth_routes.py'
+# dan berada di direktori yang sama atau dapat diimpor)
+from .auth_routes import token_required  # <-- Sesuaikan nama file jika perlu
+
 user_bp = Blueprint('user_bp', __name__)
 
 @user_bp.route('/users', methods=['GET'])
-def get_users():
+@token_required  # <-- DILINDUNGI
+def get_users(current_user_id): # <-- TAMBAH 'current_user_id'
+    """
+    Mendapatkan semua pengguna. Memerlukan token yang valid.
+    'current_user_id' kini tersedia dari token.
+    """
+    print(f"User {current_user_id} requested all users.") # Contoh penggunaan
+    
     conn = None
     try:
         conn = get_connection()
@@ -34,7 +46,13 @@ def get_users():
             conn.close()
 
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
-def get_user(user_id):
+@token_required  # <-- DILINDUNGI
+def get_user(current_user_id, user_id): # <-- TAMBAH 'current_user_id'
+    """
+    Mendapatkan satu pengguna berdasarkan ID. Memerlukan token yang valid.
+    """
+    print(f"User {current_user_id} requested data for user {user_id}.")
+    
     conn = None
     try:
         conn = get_connection()
@@ -57,7 +75,14 @@ def get_user(user_id):
             conn.close()
 
 @user_bp.route('/users', methods=['POST'])
+# --- TIDAK DILINDUNGI ---
+# Rute ini untuk registrasi (membuat user baru),
+# jadi harus bisa diakses publik tanpa token.
 def create_user():
+    """
+    Membuat pengguna baru (Registrasi).
+    Endpoint ini publik dan tidak memerlukan token.
+    """
     data = request.json
     conn = None
 
@@ -93,7 +118,18 @@ def create_user():
             conn.close()
 
 @user_bp.route('/users/<int:user_id>', methods=['PUT'])
-def update_user(user_id):
+@token_required  # <-- DILINDUNGI
+def update_user(current_user_id, user_id): # <-- TAMBAH 'current_user_id'
+    """
+    Memperbarui pengguna. Memerlukan token yang valid.
+    """
+    # --- PENTING (Otorisasi) ---
+    # Di sini Anda bisa menambahkan logika untuk memeriksa
+    # apakah pengguna yang login boleh mengubah data ini.
+    # Contoh:
+    # if current_user_id != user_id:
+    #     return jsonify({"message": "Access denied: You can only update your own profile."}), 403
+    
     data = request.json
     conn = None
 
@@ -132,7 +168,17 @@ def update_user(user_id):
             conn.close()
 
 @user_bp.route('/users/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
+@token_required  # <-- DILINDUNGI
+def delete_user(current_user_id, user_id): # <-- TAMBAH 'current_user_id'
+    """
+    Menghapus pengguna. Memerlukan token yang valid.
+    """
+    # --- PENTING (Otorisasi) ---
+    # Tambahkan logika otorisasi di sini.
+    # Contoh:
+    # if current_user_id != user_id: # dan bukan admin
+    #     return jsonify({"message": "Access denied."}), 403
+        
     conn = None
     try:
         conn = get_connection()
@@ -165,7 +211,13 @@ def delete_user(user_id):
             conn.close()
 
 @user_bp.route('/patients', methods=['GET'])
-def get_patients():
+@token_required  # <-- DILINDUNGI
+def get_patients(current_user_id): # <-- TAMBAH 'current_user_id'
+    """
+    Mendapatkan daftar pasien. Memerlukan token yang valid.
+    """
+    print(f"User {current_user_id} requested all patients.")
+    
     conn = None
     try:
         conn = get_connection()
