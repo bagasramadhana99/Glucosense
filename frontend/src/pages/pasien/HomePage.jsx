@@ -93,14 +93,14 @@ const HealthStats = memo(({ riwayat }) => {
   if (!stats) return null;
 
   return (
-    <div className="bg-cardWhite p-5 rounded-2xl border border-lineGray">
+    <div className="bg-cardWhite p-6 rounded-2xl border border-lineGray">
       <h3 className="text-base font-semibold text-textPrimary mb-3 flex items-center">
         <FaChartLine className="text-primaryBlue mr-2 text-sm" />
-        Ringkasan
+        Ringkasan Pemeriksaan
       </h3>
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-textSecondary">Total</span>
+          <span className="text-textSecondary">Total Pemeriksaan</span>
           <span className="font-medium">{stats.total} kali</span>
         </div>
         <div className="pt-2 border-t border-lineGray text-xs">
@@ -125,62 +125,6 @@ const HealthStats = memo(({ riwayat }) => {
 });
 
 // =========================
-// Mini Trend Chart
-// =========================
-const MiniTrendChart = memo(({ riwayat }) => {
-  const last7Days = useMemo(() => {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    return riwayat
-      .filter(r => new Date(r.timestamp) >= sevenDaysAgo)
-      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-      .slice(-7);
-  }, [riwayat]);
-
-  if (last7Days.length < 2) return null;
-
-  const values = last7Days.map(r => r.glucose_level);
-  const max = Math.max(...values);
-  const min = Math.min(...values);
-  const range = max - min || 1;
-
-  return (
-    <div className="bg-cardWhite p-5 rounded-2xl border border-lineGray">
-      <h3 className="text-base font-semibold text-textPrimary mb-3 flex items-center">
-        <FaChartLine className="text-primaryBlue mr-2 text-sm" />
-        Tren 7 Hari
-      </h3>
-      <div className="h-20">
-        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <polyline
-            fill="none"
-            stroke="#3b82f6"
-            strokeWidth="2"
-            strokeLinecap="round"
-            points={last7Days
-              .map((r, i) => {
-                const x = (i / (last7Days.length - 1)) * 100;
-                const y = 80 - ((r.glucose_level - min) / range) * 60;
-                return `${x},${y}`;
-              })
-              .join(' ')}
-          />
-          {last7Days.map((r, i) => {
-            const x = (i / (last7Days.length - 1)) * 100;
-            const y = 80 - ((r.glucose_level - min) / range) * 60;
-            return <circle key={i} cx={x} cy={y} r="3" fill="#3b82f6" />;
-          })}
-        </svg>
-      </div>
-      <div className="flex justify-between text-xs text-textSecondary mt-1">
-        <span>{values[0]}</span>
-        <span>{values[values.length - 1]}</span>
-      </div>
-    </div>
-  );
-});
-
-// =========================
 // Fun Fact Item
 // =========================
 const FunFactItem = memo(({ fact, isOpen, onToggle }) => (
@@ -193,7 +137,9 @@ const FunFactItem = memo(({ fact, isOpen, onToggle }) => (
         <FaLightbulb className="text-yellow-500 mr-2 text-sm" />
         <h4 className="text-sm font-medium text-textPrimary">{fact.judul}</h4>
       </div>
-      <FaChevronDown className={`text-softBlue text-sm transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      <FaChevronDown
+        className={`text-softBlue text-sm transition-transform ${isOpen ? 'rotate-180' : ''}`}
+      />
     </button>
     <div className={`overflow-hidden transition-all ${isOpen ? 'max-h-40' : 'max-h-0'}`}>
       <p className="px-4 pb-4 pt-1 text-xs text-textSecondary leading-relaxed">{fact.deskripsi}</p>
@@ -210,7 +156,9 @@ const EmptyCheckup = memo(({ onStartCheckup }) => (
       <FaStethoscope className="text-primaryBlue text-2xl" />
     </div>
     <h3 className="text-lg font-semibold text-textPrimary mb-1">Belum Ada Data</h3>
-    <p className="text-sm text-textSecondary mb-4">Mulai pemeriksaan untuk melihat hasil glukosa Anda.</p>
+    <p className="text-sm text-textSecondary mb-4">
+      Mulai pemeriksaan untuk melihat hasil glukosa Anda.
+    </p>
     <button
       onClick={onStartCheckup}
       className="text-sm font-medium text-primaryBlue hover:text-softBlue transition"
@@ -280,28 +228,24 @@ export default function PasienHome() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Checkup + Stats + Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Section */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Latest Checkup */}
             {loadingCheckup ? (
               <SkeletonCard />
             ) : latestCheckup ? (
-              <LatestCheckup checkup={latestCheckup} onViewHistory={() => navigate('/pasien/riwayat')} />
+              <LatestCheckup
+                checkup={latestCheckup}
+                onViewHistory={() => navigate('/pasien/riwayat')}
+              />
             ) : (
               <EmptyCheckup onStartCheckup={() => navigate('/pasien/pemeriksaan')} />
             )}
 
-            {/* Stats + Chart */}
-            {riwayat.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <HealthStats riwayat={riwayat} />
-                <MiniTrendChart riwayat={riwayat} />
-              </div>
-            )}
+            {riwayat.length > 0 && <HealthStats riwayat={riwayat} />}
           </div>
 
-          {/* Right: Fun Facts */}
+          {/* Right Section */}
           <div>
             <h2 className="text-lg font-semibold text-textPrimary mb-3 flex items-center">
               <FaLightbulb className="text-yellow-500 mr-2 text-sm" />
