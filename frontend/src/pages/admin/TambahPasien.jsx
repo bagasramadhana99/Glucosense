@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { FaCheck, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import apiClient from '../../api/axiosConfig';
 
-// === Modal Component (Sama persis dengan EditPasien) ===
-const Modal = ({ isOpen, onClose, title, message, type = 'info', onConfirm }) => {
+// === Modal Component (Diperbarui dengan actionLabel) ===
+const Modal = ({ isOpen, onClose, title, message, type = 'info', onConfirm, actionLabel }) => {
   if (!isOpen) return null;
 
   const types = {
@@ -15,6 +15,9 @@ const Modal = ({ isOpen, onClose, title, message, type = 'info', onConfirm }) =>
   };
 
   const { icon: Icon, color, bg, border } = types[type];
+
+  // Default label jika actionLabel tidak diberikan
+  const defaultLabel = type === 'confirm' ? 'Tambah' : 'Batalkan';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -26,9 +29,7 @@ const Modal = ({ isOpen, onClose, title, message, type = 'info', onConfirm }) =>
           <Icon className={`text-lg ${color}`} />
           <p className={`font-semibold text-sm ${color}`}>{title}</p>
         </div>
-
         <p className="text-sm text-textPrimary mb-6">{message}</p>
-
         <div className="flex justify-end gap-3">
           {type === 'confirm' && (
             <>
@@ -42,7 +43,7 @@ const Modal = ({ isOpen, onClose, title, message, type = 'info', onConfirm }) =>
                 onClick={onConfirm}
                 className="px-5 py-2 text-sm font-medium text-white bg-primaryBlue rounded-lg hover:bg-[#1a3355] hover:shadow-md transition-all"
               >
-                Ya, {type === 'confirm' ? 'Tambah' : 'Batalkan'}
+                {actionLabel || `Ya, ${defaultLabel}`}
               </button>
             </>
           )}
@@ -64,7 +65,6 @@ export default function TambahPasien() {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-
   const [newUser, setNewUser] = useState({
     name: '',
     age: '',
@@ -115,7 +115,6 @@ export default function TambahPasien() {
         age: newUser.age ? parseInt(newUser.age, 10) : null,
         role: 'patient',
       };
-
       await apiClient.post('/users', payload);
       setShowSuccess(true);
     } catch (err) {
@@ -141,7 +140,6 @@ export default function TambahPasien() {
   return (
     <div className="flex h-screen bg-neutralBg font-sans">
       <Sidebar activePage="Data Pasien" />
-
       <main className="flex-1 p-5 md:p-7 overflow-y-auto">
         {/* Header */}
         <header className="mb-6">
@@ -274,7 +272,6 @@ export default function TambahPasien() {
                 >
                   Batal
                 </button>
-
                 <button
                   type="submit"
                   disabled={saving}
@@ -291,6 +288,7 @@ export default function TambahPasien() {
       </main>
 
       {/* === MODALS === */}
+
       {/* Konfirmasi Tambah */}
       <Modal
         isOpen={showConfirm}
@@ -299,6 +297,7 @@ export default function TambahPasien() {
         message="Pastikan semua data sudah benar sebelum menambahkan pasien."
         type="confirm"
         onConfirm={confirmAdd}
+        actionLabel="Ya, Tambah"
       />
 
       {/* Konfirmasi Batal */}
@@ -306,9 +305,10 @@ export default function TambahPasien() {
         isOpen={showCancel}
         onClose={() => setShowCancel(false)}
         title="Batalkan Penambahan?"
-        message="Data yang sudah diisi akan hilang. Lanjutkan?"
+        message="Anda akan membatalkan penambahan pasien. Semua data yang diisi akan hilang. Lanjutkan?"
         type="confirm"
         onConfirm={confirmCancel}
+        actionLabel="Ya, Batalkan"
       />
 
       {/* Sukses */}

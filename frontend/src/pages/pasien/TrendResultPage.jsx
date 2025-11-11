@@ -212,7 +212,7 @@ export default function TrendResultPage() {
             >
               <h2 className="text-lg font-bold text-textPrimary flex items-center mb-5">
                 <FaRobot className="mr-2 text-primaryBlue" />
-                Rekomendasi AI
+                Rekomendasi
               </h2>
 
               {loadingRecommendation ? (
@@ -279,7 +279,7 @@ export default function TrendResultPage() {
           >
             <h2 className="text-lg font-bold text-textPrimary flex items-center">
               <FaRobot className="mr-2 text-primaryBlue" />
-              Rekomendasi AI
+              Rekomendasi
             </h2>
             {showRecommendation ? (
               <FaChevronUp className="text-primaryBlue" />
