@@ -3,7 +3,7 @@ from db import get_connection
 from datetime import datetime
 from .auth_routes import token_required
 
-monitoring_bp = Blueprint('monitoring_bp', __name__)
+monitoring_bp = Blueprint('monitoring_bp', _name_)
 
 @monitoring_bp.route('/monitoring', methods=['GET'])
 @token_required  # <-- DILINDUNGI
@@ -42,30 +42,29 @@ def create_monitoring_alias(current_user_id): # <-- TAMBAH current_user_id
     return save_monitoring(current_user_id)
 
 @monitoring_bp.route('/monitoring/save', methods=['POST'])
-@token_required  # <-- DILINDUNGI
-def save_monitoring(current_user_id): # <-- TAMBAH current_user_id
-    """
-    Menyimpan data monitoring baru untuk pengguna yang sedang login.
-    Data 'user_id' diambil dari token, bukan dari JSON body.
-    """
+def save_monitoring():
     conn = None
     cursor = None
     try:
         data = request.json
-        # 'name' TIDAK diperlukan lagi dari JSON
+        name = data.get('name')
         glucose_level = data.get('glucose_level')
         heart_rate = data.get('heart_rate')
 
-        if not all([glucose_level, heart_rate]):
-            return jsonify({"error": "Data glucose_level dan heart_rate diperlukan"}), 400
+        if not all([name, glucose_level, heart_rate]):
+            return jsonify({"error": "Data tidak lengkap"}), 400
 
         conn = get_connection()
         cursor = conn.cursor()
 
-        # <-- DIUBAH: Kita tidak perlu mencari user berdasarkan nama.
-        # Kita sudah punya ID pengguna dari token.
-        user_id = current_user_id 
-        
+        cursor.execute("SELECT id FROM users WHERE name = %s", (name,))
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": "User tidak ditemukan"}), 404
+
+        user_id = user[0]
+        #timestamp = datetime.utcnow().isoformat() + 'Z'
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         cursor.execute("""

@@ -31,7 +31,6 @@ const useAnimatedValue = (targetValue, duration = 600) => {
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(animate);
       } else {
-        // Pastikan nilai akhir 100% sama dengan target
         setCurrentValue(targetValue);
       }
     };
@@ -40,7 +39,6 @@ const useAnimatedValue = (targetValue, duration = 600) => {
     return () => cancelAnimationFrame(frameRef.current);
   }, [targetValue, duration]);
 
-  // Format angka: tetap 1 desimal jika ada, tanpa pembulatan berlebih
   return Number(currentValue.toFixed(2));
 };
 
@@ -56,7 +54,6 @@ const CircularGauge = ({ value, maxValue, label, unit }) => {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentage / 100) * circumference;
 
-  // Format angka: tampilkan 1 desimal jika ada, tanpa pembulatan
   const displayValue = animatedValue % 1 === 0 ? animatedValue : animatedValue.toFixed(1);
 
   return (
@@ -90,7 +87,7 @@ const CircularGauge = ({ value, maxValue, label, unit }) => {
 };
 
 // =========================
-// Reusable Modal (Sama seperti EditPasien)
+// Reusable Modal
 // =========================
 const Modal = ({ isOpen, onClose, title, message, type = 'info', onConfirm }) => {
   if (!isOpen) return null;
@@ -164,14 +161,13 @@ const Monitoring = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedPatient, setSelectedPatient] = useState(null);
 
-  // === Fetch real-time sensor data (TANPA PEMBULATAN) ===
+  // === Fetch real-time sensor data ===
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await apiClient.get('/sensors/latest');
         const { glucose, heart_rate } = res.data;
 
-        // Gunakan Number() agar desimal tetap terjaga
         const glucoseVal = Number(glucose) || 0;
         const heartRateVal = Number(heart_rate) || 0;
 
@@ -188,28 +184,33 @@ const Monitoring = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // === Handle Save ===
+  // === Handle Save - KIRIM patient_id BUKAN name ===
   const handleSave = async () => {
-    if (!selectedPatient) return;
+    if (!selectedPatient) {
+      setErrorMessage('Silakan pilih pasien terlebih dahulu.');
+      setShowError(true);
+      return;
+    }
 
     setShowConfirm(false);
     setIsSaving(true);
 
     try {
-      await apiClient.post('/monitoring/save', {
-        name: selectedPatient.name,
+      // PERUBAHAN UTAMA: Kirim patient_id ke backend
+      await apiClient.post('/monitoring', {
+        patient_id: selectedPatient.id,  // Kirim ID pasien, bukan nama
         glucose_level: glucoseLevel,
         heart_rate: heartRate,
       });
       setShowSuccess(true);
+      setSelectedPatient(null); // Reset setelah berhasil
     } catch (err) {
       console.error('Gagal menyimpan data:', err);
-      const msg = err.response?.data?.message || 'Gagal menyimpan hasil pemeriksaan.';
+      const msg = err.response?.data?.error || err.response?.data?.message || 'Gagal menyimpan hasil pemeriksaan.';
       setErrorMessage(msg);
       setShowError(true);
     } finally {
       setIsSaving(false);
-      setIsPatientModalOpen(false);
     }
   };
 
